@@ -9,83 +9,83 @@ debug alias printf = m3.m3.printf;
 public:
 
 struct Stack(T) {
-	static assert(!is(T : U[], U), "DynamicArray cannot be used with an array");
+    static assert(!is(T : U[], U), "DynamicArray cannot be used with an array");
 
 static struct Node {
-	T value;
-	Node* previous = null;
+    T value;
+    Node* previous = null;
 }
 
 private:
-	Node* _end;
-	size_t _length;
+    Node* _end;
+    size_t _length;
 
 public:
 
-	@trusted
-	@nogc
-	~this() {
-		Node* cur = _end;
-		while (cur) {
-			debug printf("Destroy Stack\n");
-			Node* tmp = cur;
-			cur = tmp.previous;
-			m3.m3.destruct(tmp);
-		}
-	}
+    @trusted
+    @nogc
+    ~this() {
+        Node* cur = _end;
+        while (cur) {
+            debug printf("Destroy Stack\n");
+            Node* tmp = cur;
+            cur = tmp.previous;
+            m3.m3.destruct(tmp);
+        }
+    }
 
-	@trusted
-	@nogc
-	@property
-	size_t length() const pure nothrow {
-		return _length;
-	}
+    @trusted
+    @nogc
+    @property
+    size_t length() const pure nothrow {
+        return _length;
+    }
 
-	@trusted
-	@nogc
-	@property
-	inout(Node*) top() inout pure nothrow {
-		return _end;
-	}
+    @trusted
+    @nogc
+    @property
+    inout(Node*) top() inout pure nothrow {
+        return _end;
+    }
 
-	@trusted
-	@nogc
-	void push(U : T)(auto ref U item) nothrow {
-		Node* newEnd = m3.m3.make!(Node);
-		newEnd.value = item;
-		newEnd.previous = _end;
+    @trusted
+    @nogc
+    void push(U : T)(auto ref U item) nothrow {
+        Node* newEnd = m3.m3.make!(Node);
+        newEnd.value = item;
+        newEnd.previous = _end;
 
-		_end = newEnd;
-		_length++;
-	}
+        _end = newEnd;
+        _length++;
+    }
 
-	@trusted
-	@nogc
-	void pop() nothrow {
-		if (_end) {
-			Node* oldEnd = _end;
-			_end = _end.previous;
-			m3.m3.destruct(oldEnd);
+    @trusted
+    @nogc
+    void pop() nothrow {
+        if (_end) {
+            Node* oldEnd = _end;
+            _end = _end.previous;
+            m3.m3.destruct(oldEnd);
 
-			_length--;
-		}
-	}
+            _length--;
+        }
+    }
 }
 
 @trusted
 @nogc
 unittest {
-	Stack!(char) stack;
+    Stack!(char) stack;
 
-	stack.push('H');
-	assert(stack.top.value == 'H');
+    stack.push('H');
+    assert(stack.top.value == 'H');
 
-	stack.push('a');
-	assert(stack.top.value == 'a');
+    stack.push('a');
+    assert(stack.top.value == 'a');
 
-	stack.pop();
-	assert(stack.top.value == 'H');
+    stack.pop();
+    assert(stack.top.value == 'H');
 
-	stack.pop();
-	assert(!stack.top);
+    stack.pop();
+    assert(!stack.top);
 }
