@@ -94,11 +94,7 @@ UniquePtr!(T) makeUnique(T, Args...)(UniquePtr!(T).Deleter deleter, auto ref Arg
 struct SharedPtr(T) {
 	static assert(!is(T : U[], U), "Arrays aren't allowed for SharedPtr");
 
-	static if (is(T == class))
-		alias Type = T;
-	else
-		alias Type = T*;
-
+	alias Type = m3.m3.TypeOf!(T);
 	alias Deleter = void function(ref Type) @nogc;
 
 	Type data;
