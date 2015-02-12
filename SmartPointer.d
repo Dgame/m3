@@ -198,7 +198,7 @@ SharedPtr!(T) makeShared(T, Args...)(SharedPtr!(T).Deleter deleter, auto ref Arg
 version (unittest) {
     class A {
     @nogc:
-    @safe:
+    //@safe:
 
         int id;
 
@@ -217,7 +217,7 @@ version (unittest) {
 
     class B : A {
     @nogc:
-    @safe:
+    //@safe:
 
         this(int i) {
             super(i);
@@ -230,7 +230,7 @@ version (unittest) {
 
     struct C {
     @nogc:
-    @safe:
+    //@safe:
 
         int id;
         
@@ -248,7 +248,8 @@ version (unittest) {
     }
 }
 
-@safe
+//@safe
+@trusted
 @nogc
 unittest {
     UniquePtr!(C) uc = makeUnique!(C)(42);
@@ -274,7 +275,8 @@ unittest {
     assert(uc5.data == arr.ptr);
 }
 
-@safe
+//@safe
+@trusted
 @nogc
 unittest {
     SharedPtr!(C) sc = makeShared!(C)(42);
