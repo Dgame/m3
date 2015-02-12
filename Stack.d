@@ -22,7 +22,7 @@ private:
 
 public:
 
-    @trusted
+    @safe
     @nogc
     ~this() {
         Node* cur = _end;
@@ -34,21 +34,21 @@ public:
         }
     }
 
-    @trusted
+    @safe
     @nogc
     @property
     size_t length() const pure nothrow {
         return _length;
     }
 
-    @trusted
+    @safe
     @nogc
     @property
     inout(Node*) top() inout pure nothrow {
         return _end;
     }
 
-    @trusted
+    @safe
     @nogc
     void push(U : T)(auto ref U item) nothrow {
         Node* newEnd = m3.m3.make!(Node);
@@ -59,7 +59,7 @@ public:
         _length++;
     }
 
-    @trusted
+    @safe
     @nogc
     void pop() nothrow {
         if (_end) {
@@ -72,7 +72,7 @@ public:
     }
 }
 
-@trusted
+@safe
 @nogc
 unittest {
     Stack!(char) stack;

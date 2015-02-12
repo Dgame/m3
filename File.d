@@ -41,7 +41,7 @@ void write(T : U[], U)(const string filename, const T content) nothrow {
     fwrite(content.ptr, size, content.length * size, f);
 }
 
-@trusted
+@safe
 @nogc
 @property
 wchar[] toUTF16(const char[] s) {
@@ -53,7 +53,7 @@ wchar[] toUTF16(const char[] s) {
     return r;
 }
 
-@trusted
+@safe
 @nogc
 @property
 dchar[] toUTF32(const char[] s) {
@@ -65,7 +65,7 @@ dchar[] toUTF32(const char[] s) {
     return r;
 }
 
-@trusted
+@safe
 @nogc
 unittest {
     char[] str = read("test_file.txt");

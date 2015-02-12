@@ -23,7 +23,7 @@ private:
 
 public:
 
-    @trusted
+    @safe
     @nogc
     ~this() {
         Node* cur = _front;
@@ -34,28 +34,28 @@ public:
         }
     }
 
-    @trusted
+    @safe
     @nogc
     @property
     size_t length() const pure nothrow {
         return _length;
     }
 
-    @trusted
+    @safe
     @nogc
     @property
     inout(Node*) front() inout pure nothrow {
         return _front;
     }
 
-    @trusted
+    @safe
     @nogc
     @property
     inout(Node*) end() inout pure nothrow {
         return _end;
     }
 
-    @trusted
+    @safe
     @nogc
     void pushBack(U : T)(auto ref U item) nothrow {
         Node* newEnd = m3.m3.make!(Node);
@@ -73,7 +73,7 @@ public:
         _length++;
     }
 
-    @trusted
+    @safe
     @nogc
     void pushFront(U : T)(auto ref U item) nothrow {
         Node* newFront = m3.m3.make!(Node);
@@ -91,7 +91,7 @@ public:
         _length++;
     }
 
-    @trusted
+    @safe
     @nogc
     void popBack() nothrow {
         if (_end) {
@@ -106,7 +106,7 @@ public:
         }
     }
 
-    @trusted
+    @safe
     @nogc
     void popFront() nothrow {
         if (_front) {
@@ -121,7 +121,7 @@ public:
         }
     }
 
-    @trusted
+    @safe
     @nogc
     void erase(Node* node) {
         if (!node)
@@ -143,7 +143,7 @@ public:
     }
 }
 
-@trusted
+@safe
 @nogc
 unittest {
     DoubleLinkedList!(char) dll;

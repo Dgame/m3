@@ -15,7 +15,7 @@ T[n] s(T, size_t n)(auto ref T[n] values) pure nothrow if (!is(T : U[], U)) {
     return values;
 }
 
-@trusted
+@safe
 @nogc
 unittest {
     auto arr1 = [1, 2, 3].s;
@@ -44,7 +44,7 @@ private:
 
 public:
 
-    @trusted
+    @safe
     @nogc
     this(size_t size) nothrow {
         this.reserve(size);
@@ -64,13 +64,13 @@ public:
         }
     }
 
-    @trusted
+    @safe
     @nogc
     ~this() {
         m3.m3.destruct(_data);
     }
 
-    @trusted
+    @safe
     @nogc
     void clear() pure nothrow {
         _length = 0;
@@ -99,21 +99,21 @@ public:
             return DynamicArray!(T)(_data[0 .. _length]);
     }
 
-    @trusted
+    @safe
     @nogc
     @property
     size_t length() const pure nothrow {
         return _length;
     }
 
-    @trusted
+    @safe
     @nogc
     @property
     size_t capacity() const pure nothrow {
         return _capacity;
     }
 
-    @trusted
+    @safe
     @nogc
     @property
     inout(PtrType) front() inout pure nothrow {
@@ -141,7 +141,7 @@ public:
         return _data + _length;
     }
 
-    @trusted
+    @safe
     @nogc
     void reserve(size_t size) nothrow {
         if (size > _length) {
@@ -164,7 +164,7 @@ public:
         _length++;
     }
 
-    @trusted
+    @safe
     @nogc
     void append(U : T)(U[] items) nothrow {
         if ((_length + items.length) > _capacity)
@@ -177,7 +177,9 @@ public:
 
     @trusted
     @nogc
-    auto ref inout(T) opIndex(size_t index) inout pure nothrow {
+    auto ref inout(T) opIndex(size_t index) inout pure nothrow in {
+        assert(index < _length);
+    } body {
         static if (is(T == class))
             return cast(T) _data[index];
         else
@@ -186,13 +188,19 @@ public:
 
     @trusted
     @nogc
-    void opIndexAssign(U : T)(auto ref U item, size_t index) pure nothrow {
+    void opIndexAssign(U : T)(auto ref U item, size_t index) pure nothrow in {
+        assert(index < _length);
+    } body {
         _data[index] = item;
     }
 
     @trusted
     @nogc
-    inout(T[]) opSlice(size_t from, size_t too) inout pure nothrow {
+    inout(T[]) opSlice(size_t from, size_t too) inout pure nothrow in {
+        assert(from < _length);
+        assert(too < _length);
+        assert(too > from);
+    } body {
         static if (is(T == class))
             return cast(inout T[]) _data[from .. too];
         else
@@ -210,7 +218,11 @@ public:
 
     @trusted
     @nogc
-    void opSliceAssign(U : T)(auto ref U item, size_t from, size_t too) pure nothrow {
+    void opSliceAssign(U : T)(auto ref U item, size_t from, size_t too) pure nothrow in {
+        assert(from < _length);
+        assert(too < _length);
+        assert(too > from);
+    } body {
         _data[from .. too] = item;
     }
 
@@ -222,7 +234,11 @@ public:
 
     @trusted
     @nogc
-    void opSliceAssign(U : T)(auto ref U[] items, size_t from, size_t too) pure nothrow {
+    void opSliceAssign(U : T)(auto ref U[] items, size_t from, size_t too) pure nothrow in {
+        assert(from < _length);
+        assert(too < _length);
+        assert(too > from);
+    } body {
         for (int i = from, j = 0; i < too; i++, j++) {
             _data[i] = items[j];
         }
@@ -232,6 +248,7 @@ public:
 version (unittest) {
     class A {
     @nogc:
+    @safe:
 
         int id;
 
@@ -313,6 +330,9 @@ unittest {
     for (int j = 0; i < 10; j++, i++) {
         assert(myStr[i] == hello[j]);
     }
+
+    myStr[0] = 'h';
+    assert(myStr[0] == 'h');
 
     assert(!__traits(compiles, { DynamicArray!(int[]) _; }));
 
