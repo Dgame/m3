@@ -9,7 +9,7 @@ debug alias printf = m3.m3.printf;
 public:
 
 struct Stack(T) {
-    static assert(!is(T : U[], U), "DynamicArray cannot be used with an array");
+    static assert(!is(T : U[], U), "Stack cannot be used with an array");
 
 static struct Node {
     T value;

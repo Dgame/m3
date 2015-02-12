@@ -74,7 +74,6 @@ public:
     @nogc
     void clear() pure nothrow {
         _length = 0;
-        _capacity = 0;
     }
 
     @trusted
