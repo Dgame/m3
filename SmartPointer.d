@@ -343,6 +343,9 @@ unittest {
             _SDL_Surface* sdl_srfc = m3.m3.make!(_SDL_Surface);
             SharedPtr!(_SDL_Surface).Deleter sdl_del = (_SDL_Surface* p) @nogc @trusted { _SDL_FreeSurface(p); };
             SharedPtr!(_SDL_Surface) srfc2 = makeShared!(_SDL_Surface)(sdl_srfc, sdl_del);
+
+            assert(srfc1.useCount == 0);
+            assert(srfc2.useCount == 1);
             
             srfc1 = srfc2;
 
