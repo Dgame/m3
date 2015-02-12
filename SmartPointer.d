@@ -129,7 +129,8 @@ struct SharedPtr(T) {
             (*this.useCounter)--;
             
             if (*this.useCounter <= 0) {
-                this.deleter(this.data);
+                if (this.data)
+                    this.deleter(this.data);
                 m3.m3.destruct(this.useCounter);
             }
         }
@@ -247,16 +248,22 @@ version (unittest) {
         }
     }
 
+    __gshared int sdl_deleter = 0;
+
     struct _SDL_Surface { }
 
     @nogc
-    void _SDL_FreeSurface(_SDL_Surface*) { }
+    void _SDL_FreeSurface(_SDL_Surface*) {
+        sdl_deleter++;
+    }
 }
 
 //@safe
 @trusted
 @nogc
 unittest {
+    debug printf("\n ---- UniquePtr Test started ---- \n");
+
     UniquePtr!(C) uc = makeUnique!(C)(42);
     assert(uc.id == 42 && uc.getId() == 42);
 
@@ -279,15 +286,23 @@ unittest {
     UniquePtr!(int) uc5 = makeUnique(arr.ptr);
     assert(uc5.data == arr.ptr);
 
-    _SDL_Surface* sdl_srfc;
-    UniquePtr!(_SDL_Surface).Deleter sdl_del = (_SDL_Surface* p) @nogc @trusted { _SDL_FreeSurface(p); };
-    UniquePtr!(_SDL_Surface) srfc = makeUnique!(_SDL_Surface)(sdl_srfc, sdl_del);
+    {
+        _SDL_Surface* sdl_srfc = m3.m3.make!(_SDL_Surface);
+        UniquePtr!(_SDL_Surface).Deleter sdl_del = (_SDL_Surface* p) @nogc @trusted { _SDL_FreeSurface(p); };
+        UniquePtr!(_SDL_Surface) srfc = makeUnique!(_SDL_Surface)(sdl_srfc, sdl_del);
+    }
+
+    assert(sdl_deleter == 1);
+
+    debug printf("\n ---- UniquePtr Test ended ---- \n");
 }
 
 //@safe
 @trusted
 @nogc
 unittest {
+    debug printf("\n ---- SharedPtr Test started ---- \n");
+
     SharedPtr!(C) sc = makeShared!(C)(42);
     assert(sc.id == 42 && sc.getId() == 42);
     assert(sc.useCount == 1);
@@ -319,7 +334,27 @@ unittest {
     SharedPtr!(int) sc6 = makeShared(arr.ptr);
     assert(sc6.data == arr.ptr);
 
-    _SDL_Surface* sdl_srfc;
-    SharedPtr!(_SDL_Surface).Deleter sdl_del = (_SDL_Surface* p) @nogc @trusted { _SDL_FreeSurface(p); };
-    SharedPtr!(_SDL_Surface) srfc = makeShared!(_SDL_Surface)(sdl_srfc, sdl_del);
+    {
+
+        SharedPtr!(_SDL_Surface) srfc1;
+        assert(srfc1.useCount == 0);
+
+        {
+            _SDL_Surface* sdl_srfc = m3.m3.make!(_SDL_Surface);
+            SharedPtr!(_SDL_Surface).Deleter sdl_del = (_SDL_Surface* p) @nogc @trusted { _SDL_FreeSurface(p); };
+            SharedPtr!(_SDL_Surface) srfc2 = makeShared!(_SDL_Surface)(sdl_srfc, sdl_del);
+            
+            srfc1 = srfc2;
+
+            assert(srfc1.useCount == 2);
+            assert(srfc2.useCount == 2);
+        }
+
+        assert(srfc1.useCount == 1);
+        assert(sdl_deleter == 1);
+    }
+
+    assert(sdl_deleter == 2);
+    
+    debug printf("\n ---- SharedPtr Test ended ---- \n");
 }
