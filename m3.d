@@ -102,7 +102,7 @@ auto make(T, Args...)(auto ref Args args) if (!is(T : U[], U) && !is(T == class)
 
 @trusted
 @nogc
-void destruct(T)(ref T obj) if (is(T == class)) {
+void destruct(T)(T obj) if (is(T == class)) {
     if (obj) {
         static if (__traits(hasMember, T, DTOR))
             obj.__dtor();
@@ -114,7 +114,7 @@ void destruct(T)(ref T obj) if (is(T == class)) {
 
 @trusted
 @nogc
-void destruct(T)(ref T* p) if (!is(T == class)) {
+void destruct(T)(T* p) if (!is(T == class)) {
     if (p) {
         static if (is(T == struct)) {
             static if (__traits(hasMember, T, DTOR))

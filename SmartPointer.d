@@ -14,7 +14,7 @@ struct UniquePtr(T) {
     static assert(!is(T : U[], U), "Arrays aren't allowed for UniquePtr");
 
     alias Type = m3.m3.TypeOf!(T);
-    alias Deleter = void function(ref Type) @nogc @trusted;
+    alias Deleter = void function(Type) @nogc @trusted;
 
     Type data;
     Deleter deleter;
@@ -96,7 +96,7 @@ struct SharedPtr(T) {
     static assert(!is(T : U[], U), "Arrays aren't allowed for SharedPtr");
 
     alias Type = m3.m3.TypeOf!(T);
-    alias Deleter = void function(ref Type) @nogc @trusted;
+    alias Deleter = void function(Type) @nogc @trusted;
 
     Type data;
     Deleter deleter;
@@ -246,6 +246,11 @@ version (unittest) {
             return this.id;
         }
     }
+
+    struct _SDL_Surface { }
+
+    @nogc
+    void _SDL_FreeSurface(_SDL_Surface*) { }
 }
 
 //@safe
@@ -273,6 +278,10 @@ unittest {
     int[] arr = m3.m3.make!(int[])(42);
     UniquePtr!(int) uc5 = makeUnique(arr.ptr);
     assert(uc5.data == arr.ptr);
+
+    _SDL_Surface* sdl_srfc;
+    UniquePtr!(_SDL_Surface).Deleter sdl_del = (_SDL_Surface* p) @nogc @trusted { _SDL_FreeSurface(p); };
+    UniquePtr!(_SDL_Surface) srfc = makeUnique!(_SDL_Surface)(sdl_srfc, sdl_del);
 }
 
 //@safe
@@ -309,4 +318,8 @@ unittest {
     int[] arr = m3.m3.make!(int[])(42);
     SharedPtr!(int) sc6 = makeShared(arr.ptr);
     assert(sc6.data == arr.ptr);
+
+    _SDL_Surface* sdl_srfc;
+    SharedPtr!(_SDL_Surface).Deleter sdl_del = (_SDL_Surface* p) @nogc @trusted { _SDL_FreeSurface(p); };
+    SharedPtr!(_SDL_Surface) srfc = makeShared!(_SDL_Surface)(sdl_srfc, sdl_del);
 }
