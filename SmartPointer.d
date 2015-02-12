@@ -14,7 +14,7 @@ struct UniquePtr(T) {
     static assert(!is(T : U[], U), "Arrays aren't allowed for UniquePtr");
 
     alias Type = m3.m3.TypeOf!(T);
-    alias Deleter = void function(ref Type) @nogc @safe;
+    alias Deleter = void function(ref Type) @nogc @trusted;
 
     Type data;
     Deleter deleter;
@@ -96,7 +96,7 @@ struct SharedPtr(T) {
     static assert(!is(T : U[], U), "Arrays aren't allowed for SharedPtr");
 
     alias Type = m3.m3.TypeOf!(T);
-    alias Deleter = void function(ref Type) @nogc @safe;
+    alias Deleter = void function(ref Type) @nogc @trusted;
 
     Type data;
     Deleter deleter;
