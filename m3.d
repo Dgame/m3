@@ -82,12 +82,14 @@ auto make(T, Args...)(auto ref Args args) if (is(T == class) || is(T == struct))
 
 @nogc
 auto make(T, Args...)(auto ref Args args) if (!is(T : U[], U) && !is(T == class) && !is(T == struct)) {
+    enum size_t SIZE = SizeOf!(T);
+
     static if (args.length == 0)
-        return cast(T*) calloc(T.sizeof, 1);
+        return cast(T*) calloc(SIZE, 1);
     else {
         static assert(args.length == 1, "Too many parameter!");
 
-        T* p = cast(T*) malloc(T.sizeof);
+        T* p = cast(T*) malloc(SIZE);
         *p = args[0];
 
         return p;
@@ -100,6 +102,7 @@ void destruct(T)(T obj) if (is(T == class)) {
         static if (__traits(hasMember, T, DTOR))
             obj.__dtor();
         debug printf("Release class %s : %p\n", &T.stringof[0], cast(void*) obj);
+        
         free(cast(void*) obj);
         obj = null;
     }
@@ -123,12 +126,16 @@ void destruct(T)(T* p) if (!is(T == class)) {
 
 @nogc
 T make(T : U[], U)(size_t n) nothrow {
-    return (cast(U*) calloc(T.sizeof, n))[0 .. n];
+    enum size_t SIZE = SizeOf!(T);
+
+    return (cast(U*) calloc(SIZE, n))[0 .. n];
 }
 
 @nogc
 T* reserve(T)(T* ptr, size_t size) nothrow if (!is(T : U[], U) && !is(T == class)) {
-    ptr = cast(T*) realloc(ptr, size * T.sizeof);
+    enum size_t SIZE = SizeOf!(T);
+
+    ptr = cast(T*) realloc(ptr, size * SIZE);
     return ptr;
 }
 
@@ -138,7 +145,7 @@ T append(T : U[], U, Args...)(ref T arr, auto ref Args args) nothrow {
         immutable size_t olen = arr.length;
         immutable size_t nlen = olen + args.length;
         
-        arr = reserve(arr.ptr, nlen * T.sizeof)[0 .. nlen];
+        arr = reserve(arr.ptr, nlen)[0 .. nlen];
         
         size_t i = olen;
         foreach (arg; args) {
