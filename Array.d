@@ -131,8 +131,10 @@ public:
 
     @nogc
     void reserve(size_t size) nothrow {
-        _capacity += size;
-        _data = m3.m3.reserve(_data, _capacity);
+        if (size > 0) {
+            _capacity += size;
+            _data = m3.m3.reserve(_data, _capacity);
+        }
     }
 
     @nogc
