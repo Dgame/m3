@@ -305,7 +305,6 @@ unittest {
     assert(sc6.data == arr.ptr);
 
     {
-
         SharedPtr!(_SDL_Surface) srfc1;
         assert(srfc1.useCount == 0);
 

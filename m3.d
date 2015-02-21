@@ -8,9 +8,6 @@ alias calloc = core.stdc.stdlib.calloc;
 alias realloc = core.stdc.stdlib.realloc;
 alias free = core.stdc.stdlib.free;
 
-static import core.stdc.string;
-alias memset = core.stdc.string.memset;
-
 enum CTOR = "__ctor";
 enum DTOR = "__dtor";
 
@@ -56,12 +53,15 @@ auto emplace(T, Args...)(void[] buf, auto ref Args args) if (is(T == class) || i
     static if (is(T == class)) {
         buf[] = typeid(T).init[];
         debug printf("Emplace class %s\n", &T.stringof[0]);
-    } else {
-        memset(buf.ptr, 0, SIZE);
-        debug printf("Emplace struct %s\n", &T.stringof[0]);
     }
 
     Type tp = cast(Type) buf.ptr;
+
+    static if (is(T == struct)) {
+        *tp = T.init;
+        debug printf("Emplace struct %s\n", &T.stringof[0]);
+    }
+
     static if (args.length != 0) {
         static assert(__traits(hasMember, T, CTOR), "No CTor for type " ~ T.stringof);
         tp.__ctor(args);
@@ -83,17 +83,16 @@ auto make(T, Args...)(auto ref Args args) if (is(T == class) || is(T == struct))
 @nogc
 auto make(T, Args...)(auto ref Args args) if (!is(T : U[], U) && !is(T == class) && !is(T == struct)) {
     enum size_t SIZE = SizeOf!(T);
+    T* p = cast(T*) malloc(SIZE);
 
     static if (args.length == 0)
-        return cast(T*) calloc(SIZE, 1);
+        *p = T.init;
     else {
-        static assert(args.length == 1, "Too many parameter!");
-
-        T* p = cast(T*) malloc(SIZE);
+        static assert(args.length == 1, "Too many parameters!");
         *p = args[0];
-
-        return p;
     }
+
+    return p;
 }
 
 @nogc
@@ -128,7 +127,7 @@ void destruct(T)(T* p) if (!is(T == class)) {
 T make(T : U[], U)(size_t n) nothrow {
     enum size_t SIZE = SizeOf!(T);
 
-    return (cast(U*) calloc(SIZE, n))[0 .. n];
+    return (cast(U*) calloc(n, SIZE))[0 .. n];
 }
 
 @nogc
@@ -173,8 +172,7 @@ void destruct(T : U[], U)(ref T arr) nothrow {
 version (unittest) {
     class A {
     @nogc:
-
-        int id;
+        int id = 23;
 
         this(int i) {
             this.id = i;
@@ -191,7 +189,6 @@ version (unittest) {
 
     class B : A {
     @nogc:
-
         this(int i) {
             super(i);
         }
@@ -203,8 +200,7 @@ version (unittest) {
 
     struct C {
     @nogc:
-
-        int id;
+        int id = 42;
         
         this(int i) {
             this.id = i;
@@ -272,13 +268,13 @@ unittest {
     destruct(b);
     
     C* c = make!(C);
-    assert(c.id == 0 && c.getId() == 0);
+    assert(c.id == 42 && c.getId() == 42);
     
     destruct(c);
 
     void[__traits(classInstanceSize, A)] buf = void;
     A as = emplace!(A)(buf[]);
-    assert(as.id == 0 && as.getId() == 0);
+    assert(as.id == 23 && as.getId() == 23);
 
     void[__traits(classInstanceSize, A)] buf2 = void;
     A as2 = emplace!(A)(buf2[], 42);
