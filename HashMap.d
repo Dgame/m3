@@ -164,14 +164,12 @@ public:
 	}
 
 	@nogc
-	ref inout(V) opIndex(K key, string filename = __FILE__, size_t lineNr = __LINE__) inout pure {
+	ref inout(V) opIndex(K key) inout pure {
 		auto p = this.get(key);
 		if (p)
 			return *p;
 
-		void[m3.m3.SizeOf!(Exception)] except = void;
-
-		throw m3.m3.emplaceThrowable!(Exception)(except, "No such key found", filename, lineNr);
+		assert(0, "No such key found");
 	}
 
 	@nogc
@@ -226,7 +224,7 @@ unittest {
 
 	try {
 		auto _ = telNr["ABC"];
-	} catch (Exception e) {
+	} catch (Error e) {
 		assert(e.msg == "No such key found");
 	}
 }

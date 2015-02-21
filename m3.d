@@ -61,17 +61,6 @@ auto emplace(T, Args...)(void[] buf, auto ref Args args) if (is(T == class) || i
     return tp;
 }
 
-// Since Throwable CTor is not @nogc, we have to do it manually
-@nogc
-Throwable emplaceThrowable(T : Throwable)(void[] buf, string msg, string filename = __FILE__, size_t lineNr = __LINE__) pure {
-    auto except = emplace!(T)(buf);
-    except.msg = msg;
-    except.file = filename;
-    except.line = lineNr;
-
-    return except;
-}
-
 @nogc
 auto make(T, Args...)(auto ref Args args) if (is(T == class) || is(T == struct)) {
     enum size_t SIZE = SizeOf!(T);
