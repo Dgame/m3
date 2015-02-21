@@ -5,13 +5,14 @@
 
 Currently you can
 
- - read and write to and from files
- - convert your data to UTF16 and UTF32.
  - use a shared and a unique pointer which manage the lifetimes
- - use a dynamic array (similar to std::vector from C++)
+ - use a dynamic array (similar to D's builtin dynamic arrays or std::vector from C++)
  - use a double linked list
  - use a stack
+ - use a HashMap (similar to D's builtin associative arrays or std::map from C++)
  - allocate arrays
  - append existing arrays
  - allocate and assign structs and basic types
  - allocate classes on stack and heap
+ - read from files and write to files
+ - convert your data to UTF16 and UTF32
