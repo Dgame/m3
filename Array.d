@@ -131,10 +131,8 @@ public:
 
     @nogc
     void reserve(size_t size) nothrow {
-        if (size > _length) {
-            _capacity += size;
-            _data = m3.m3.reserve(_data, _capacity);
-        }
+        _capacity += size;
+        _data = m3.m3.reserve(_data, _capacity);
     }
 
     @nogc
@@ -337,11 +335,20 @@ unittest {
     DynamicArray!(A) as2;
 
     as2.append(a1);
+    as2.append(null);
+    as2.append(a2);
 
-    assert(as2.length == 1);
+    assert(as2.length == 3);
     assert(as2.capacity == 3);
 
     A a3 = as2[0];
     assert(a3 is a1);
     assert(a3.id == 42 && a3.getId() == 42);
+
+    A a4 = as2[1];
+    assert(a4 is null);
+    
+    A a5 = as2[2];
+    assert(a5 is a3);
+    assert(a5.id == 42 && a5.getId() == 42);
 }
