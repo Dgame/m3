@@ -17,14 +17,14 @@ struct UniquePtr(T) {
     alias Deleter = void function(Type) @nogc;
 
 private:
-    Type data;
-    Deleter deleter;
+    Type _data;
+    Deleter _deleter;
 
 public:
     @nogc
     this(Type data, Deleter deleter = &m3.m3.destruct!(T)) nothrow {
-        this.data = data;
-        this.deleter = deleter;
+        _data = data;
+        _deleter = deleter;
     }
 
     @disable
@@ -32,20 +32,20 @@ public:
 
     @nogc
     ~this() {
-        if (this.data)
-            this.deleter(this.data);
+        if (_data)
+            _deleter(_data);
     }
 
     @nogc
     Type release() pure nothrow {
-        scope(exit) this.data = null;
-        return this.data;
+        scope(exit) _data = null;
+        return _data;
     }
 
     @nogc
     @property
     inout(Type) get() inout pure nothrow {
-        return this.data;
+        return _data;
     }
 
     alias get this;
@@ -90,58 +90,58 @@ struct SharedPtr(T) {
     alias Deleter = void function(Type) @nogc;
 
 private:
-    Type data;
-    Deleter deleter;
-    int* useCounter;
+    Type _data;
+    Deleter _deleter;
+    int* _useCounter;
 
 public:
     @nogc
     this(Type data, Deleter deleter = &m3.m3.destruct!(T)) nothrow {
-        this.data = data;
-        this.deleter = deleter;
-        this.useCounter = m3.m3.make!(int)(1);
+        _data = data;
+        _deleter = deleter;
+        _useCounter = m3.m3.make!(int)(1);
     }
 
     @nogc
     this(this) {
-        if (this.useCounter) {
-            this.data = data;
-            this.deleter = deleter;
-            this.useCounter = useCounter;
+        if (_useCounter) {
+            _data = this._data;
+            _deleter = this._deleter;
+            _useCounter = this._useCounter;
 
-            (*this.useCounter)++;
+            (*_useCounter)++;
         }
     }
 
     @nogc
     ~this() {
-        if (this.useCounter) {
-            (*this.useCounter)--;
+        if (_useCounter) {
+            (*_useCounter)--;
             
-            if (*this.useCounter <= 0) {
-                if (this.data)
-                    this.deleter(this.data);
-                m3.m3.destruct(this.useCounter);
+            if (*_useCounter <= 0) {
+                if (_data)
+                    _deleter(_data);
+                m3.m3.destruct(_useCounter);
             }
         }
     }
 
     @nogc
     Type release() pure nothrow {
-        scope(exit) this.data = null;
-        return this.data;
+        scope(exit) _data = null;
+        return _data;
     }
 
     @nogc
     @property
     int useCount() const pure nothrow {
-        return this.useCounter ? *this.useCounter : 0;
+        return _useCounter ? *_useCounter : 0;
     }
 
     @nogc
     @property
     inout(Type) get() inout pure nothrow {
-        return this.data;
+        return _data;
     }
 
     alias get this;
@@ -255,12 +255,12 @@ unittest {
     assert(c.id == 23 && c.getId() == 23);
 
     UniquePtr!(C) uc4 = makeUnique(c);
-    assert(c == uc4.data);
+    assert(c == uc4.get);
     assert(uc4.id == c.id && uc4.getId() == c.getId());
 
     int[] arr = m3.m3.make!(int[])(42);
     UniquePtr!(int) uc5 = makeUnique(arr.ptr);
-    assert(uc5.data == arr.ptr);
+    assert(uc5.get == arr.ptr);
 
     {
         _SDL_Surface* sdl_srfc = m3.m3.make!(_SDL_Surface);
@@ -301,12 +301,12 @@ unittest {
 
     C* c = m3.m3.make!(C)(23);
     SharedPtr!(C) sc5 = makeShared(c);
-    assert(c == sc5.data);
+    assert(c == sc5.get);
     assert(sc5.id == c.id && sc5.getId() == c.getId());
 
     int[] arr = m3.m3.make!(int[])(42);
     SharedPtr!(int) sc6 = makeShared(arr.ptr);
-    assert(sc6.data == arr.ptr);
+    assert(sc6.get == arr.ptr);
 
     {
         SharedPtr!(_SDL_Surface) srfc1;
