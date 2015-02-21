@@ -261,7 +261,7 @@ unittest {
     {
         _SDL_Surface* sdl_srfc = m3.m3.make!(_SDL_Surface);
         //UniquePtr!(_SDL_Surface).Deleter sdl_del = (_SDL_Surface* p) @nogc { _SDL_FreeSurface(p); p = null; };
-        UniquePtr!(_SDL_Surface) srfc = makeUnique!(_SDL_Surface)(sdl_srfc, function(_SDL_Surface* p) { _SDL_FreeSurface(p); p = null; });
+        UniquePtr!(_SDL_Surface) srfc = makeUnique!(_SDL_Surface)(sdl_srfc, function(_SDL_Surface* p) { _SDL_FreeSurface(p); p = null; debug printf("UniquePtr: _SDL_FreeSurface\n"); });
     }
 
     assert(sdl_deleter == 1);
@@ -312,7 +312,7 @@ unittest {
         {
             _SDL_Surface* sdl_srfc = m3.m3.make!(_SDL_Surface);
             //SharedPtr!(_SDL_Surface).Deleter sdl_del = (_SDL_Surface* p) @nogc { _SDL_FreeSurface(p); p = null; };
-            SharedPtr!(_SDL_Surface) srfc2 = makeShared!(_SDL_Surface)(sdl_srfc, function(_SDL_Surface* p) { _SDL_FreeSurface(p); p = null; });
+            SharedPtr!(_SDL_Surface) srfc2 = makeShared!(_SDL_Surface)(sdl_srfc, function(_SDL_Surface* p) { _SDL_FreeSurface(p); p = null; debug printf("SharedPtr: _SDL_FreeSurface\n"); });
 
             assert(srfc1.useCount == 0);
             assert(srfc2.useCount == 1);
