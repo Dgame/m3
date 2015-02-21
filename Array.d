@@ -31,11 +31,9 @@ struct DynamicArray(T) {
     enum size_t OFFSET = 3;
     static assert(OFFSET > 0);
 
-    alias PtrType = m3.m3.PointerTypeOf!(T);
-
 private:
     static if (is(T == class))
-        PtrType* _data;
+        void** _data;
     else
         T* _data;
 
@@ -55,7 +53,7 @@ public:
 
         for (size_t i = 0; i < _length; i++) {
             static if (is(T == class))
-                _data[i] = cast(PtrType) items[i];
+                _data[i] = cast(void*) items[i];
             else
                 _data[i] = items[i];
         }
@@ -109,25 +107,25 @@ public:
 
     @nogc
     @property
-    inout(PtrType) front() inout pure nothrow {
+    auto front() inout pure nothrow {
         return _data;
     }
 
     @nogc
     @property
-    inout(PtrType) back() inout pure nothrow {
+    auto back() inout pure nothrow {
         return _data + _length - 1;
     }
 
     @nogc
     @property
-    const(PtrType) begin() const pure nothrow {
+    auto begin() const pure nothrow {
         return _data - 1;
     }
 
     @nogc
     @property
-    const(PtrType) end() const pure nothrow {
+    auto end() const pure nothrow {
         return _data + _length;
     }
 
@@ -145,7 +143,7 @@ public:
             this.reserve(_capacity + OFFSET);
 
         static if (is(T == class))
-            _data[_length] = cast(PtrType) item;
+            _data[_length] = cast(void*) item;
         else
             _data[_length] = item;
 

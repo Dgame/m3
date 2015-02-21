@@ -4,7 +4,6 @@ private:
 
 static import core.stdc.stdlib;
 alias malloc = core.stdc.stdlib.malloc;
-alias calloc = core.stdc.stdlib.calloc;
 alias realloc = core.stdc.stdlib.realloc;
 alias free = core.stdc.stdlib.free;
 
@@ -37,14 +36,6 @@ template TypeOf(T) {
 }
 
 @nogc
-template PointerTypeOf(T) {
-    static if (is(T == class))
-        alias PointerTypeOf = void*;
-    else
-        alias PointerTypeOf = T*;
-}
-
-@nogc
 auto emplace(T, Args...)(void[] buf, auto ref Args args) if (is(T == class) || is(T == struct)) {
     enum size_t SIZE = SizeOf!(T);
     assert(buf.length == SIZE);
@@ -74,6 +65,7 @@ auto emplace(T, Args...)(void[] buf, auto ref Args args) if (is(T == class) || i
 auto make(T, Args...)(auto ref Args args) if (is(T == class) || is(T == struct)) {
     enum size_t SIZE = SizeOf!(T);
     void* p = malloc(SIZE);
+
     debug printf("Make %s : %p\n", &T.stringof[0], p);
         
     return emplace!(T)(p[0 .. SIZE], args);
@@ -125,14 +117,12 @@ void destruct(T)(T* p) if (!is(T == class)) {
 @nogc
 T make(T : U[], U)(size_t n) {
     enum size_t SIZE = SizeOf!(U);
-    alias PtrType = PointerTypeOf!(U);
-
     void* p = malloc(n * SIZE);
 
     static if (is(U == class))
-        T arr = cast(T) (cast(PtrType*) p)[0 .. n];
+        T arr = cast(T) (cast(void**) p)[0 .. n];
     else
-        T arr = (cast(PtrType) p)[0 .. n];
+        T arr = (cast(U*) p)[0 .. n];
 
     arr[0 .. n] = U.init;
 
