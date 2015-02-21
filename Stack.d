@@ -21,8 +21,6 @@ private:
     size_t _length;
 
 public:
-
-    @safe
     @nogc
     ~this() {
         Node* cur = _end;
@@ -41,14 +39,12 @@ public:
         return _length;
     }
 
-    @safe
     @nogc
     @property
     inout(Node*) top() inout pure nothrow {
         return _end;
     }
 
-    @safe
     @nogc
     void push(U : T)(auto ref U item) nothrow {
         Node* newEnd = m3.m3.make!(Node);
@@ -59,7 +55,6 @@ public:
         _length++;
     }
 
-    @safe
     @nogc
     void pop() nothrow {
         if (_end) {
@@ -72,7 +67,6 @@ public:
     }
 }
 
-@safe
 @nogc
 unittest {
     Stack!(char) stack;

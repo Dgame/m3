@@ -14,12 +14,11 @@ struct UniquePtr(T) {
     static assert(!is(T : U[], U), "Arrays aren't allowed for UniquePtr");
 
     alias Type = m3.m3.TypeOf!(T);
-    alias Deleter = void function(Type) @nogc @trusted;
+    alias Deleter = void function(Type) @nogc;
 
     Type data;
     Deleter deleter;
 
-    @safe
     @nogc
     this(Type data, Deleter deleter = &m3.m3.destruct!(T)) nothrow {
         this.data = data;
@@ -27,24 +26,20 @@ struct UniquePtr(T) {
     }
 
     @disable
-    @safe
     this(this);
 
-    @safe
     @nogc
     ~this() {
         if (this.data)
             this.deleter(this.data);
     }
 
-    @safe
     @nogc
     Type release() pure nothrow {
         scope(exit) this.data = null;
         return this.data;
     }
 
-    @safe
     @nogc
     @property
     inout(Type) get() inout pure nothrow {
@@ -54,37 +49,31 @@ struct UniquePtr(T) {
     alias get this;
 }
 
-@safe
 @nogc
 UniquePtr!(T) makeUnique(T)(T* data) {
     return UniquePtr!(T)(data);
 }
 
-@safe
 @nogc
 UniquePtr!(T) makeUnique(T)(T* data, UniquePtr!(T).Deleter deleter) {
     return UniquePtr!(T)(data, deleter);
 }
 
-@safe
 @nogc
 UniquePtr!(T) makeUnique(T)(T data) if (is(T == class)) {
     return UniquePtr!(T)(data);
 }
 
-@safe
 @nogc
 UniquePtr!(T) makeUnique(T)(T data, UniquePtr!(T).Deleter deleter) if (is(T == class)) {
     return UniquePtr!(T)(data, deleter);
 }
 
-@safe
 @nogc
 UniquePtr!(T) makeUnique(T, Args...)(auto ref Args args) {
     return UniquePtr!(T)(m3.m3.make!(T)(args));
 }
 
-@safe
 @nogc
 UniquePtr!(T) makeUnique(T, Args...)(UniquePtr!(T).Deleter deleter, auto ref Args args) {
     return UniquePtr!(T)(m3.m3.make!(T)(args), deleter);
@@ -96,13 +85,12 @@ struct SharedPtr(T) {
     static assert(!is(T : U[], U), "Arrays aren't allowed for SharedPtr");
 
     alias Type = m3.m3.TypeOf!(T);
-    alias Deleter = void function(Type) @nogc @trusted;
+    alias Deleter = void function(Type) @nogc;
 
     Type data;
     Deleter deleter;
     int* useCounter;
 
-    @safe
     @nogc
     this(Type data, Deleter deleter = &m3.m3.destruct!(T)) nothrow {
         this.data = data;
@@ -110,7 +98,6 @@ struct SharedPtr(T) {
         this.useCounter = m3.m3.make!(int)(1);
     }
 
-    @safe
     @nogc
     this(this) {
         if (this.useCounter) {
@@ -122,7 +109,6 @@ struct SharedPtr(T) {
         }
     }
 
-    @safe
     @nogc
     ~this() {
         if (this.useCounter) {
@@ -136,21 +122,18 @@ struct SharedPtr(T) {
         }
     }
 
-    @safe
     @nogc
     Type release() pure nothrow {
         scope(exit) this.data = null;
         return this.data;
     }
 
-    @safe
     @nogc
     @property
     int useCount() const pure nothrow {
         return this.useCounter ? *this.useCounter : 0;
     }
 
-    @safe
     @nogc
     @property
     inout(Type) get() inout pure nothrow {
@@ -160,37 +143,31 @@ struct SharedPtr(T) {
     alias get this;
 }
 
-@safe
 @nogc
 SharedPtr!(T) makeShared(T)(T* data) {
     return SharedPtr!(T)(data);
 }
 
-@safe
 @nogc
 SharedPtr!(T) makeShared(T)(T* data, SharedPtr!(T).Deleter deleter) {
     return SharedPtr!(T)(data, deleter);
 }
 
-@safe
 @nogc
 SharedPtr!(T) makeShared(T)(T data) if (is(T == class)) {
     return SharedPtr!(T)(data);
 }
 
-@safe
 @nogc
 SharedPtr!(T) makeShared(T)(T data, SharedPtr!(T).Deleter deleter) if (is(T == class)) {
     return SharedPtr!(T)(data, deleter);
 }
 
-@safe
 @nogc
 SharedPtr!(T) makeShared(T, Args...)(auto ref Args args) {
     return SharedPtr!(T)(m3.m3.make!(T)(args));
 }
 
-@safe
 @nogc
 SharedPtr!(T) makeShared(T, Args...)(SharedPtr!(T).Deleter deleter, auto ref Args args) {
     return SharedPtr!(T)(m3.m3.make!(T)(args), deleter);
@@ -199,7 +176,6 @@ SharedPtr!(T) makeShared(T, Args...)(SharedPtr!(T).Deleter deleter, auto ref Arg
 version (unittest) {
     class A {
     @nogc:
-    //@safe:
 
         int id;
 
@@ -218,7 +194,6 @@ version (unittest) {
 
     class B : A {
     @nogc:
-    //@safe:
 
         this(int i) {
             super(i);
@@ -231,7 +206,6 @@ version (unittest) {
 
     struct C {
     @nogc:
-    //@safe:
 
         int id;
         
@@ -258,8 +232,6 @@ version (unittest) {
     }
 }
 
-//@safe
-@trusted
 @nogc
 unittest {
     debug printf("\n ---- UniquePtr Test started ---- \n");
@@ -297,8 +269,6 @@ unittest {
     debug printf("\n ---- UniquePtr Test ended ---- \n");
 }
 
-//@safe
-@trusted
 @nogc
 unittest {
     debug printf("\n ---- SharedPtr Test started ---- \n");

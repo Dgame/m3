@@ -23,7 +23,6 @@ public:
 
 /* Class and Struct */
 
-@safe
 @nogc
 template SizeOf(T) {
     static if (is(T == class))
@@ -32,7 +31,6 @@ template SizeOf(T) {
         enum size_t SizeOf = T.sizeof;
 }
 
-@safe
 @nogc
 template TypeOf(T) {
     static if (is(T == class))
@@ -41,7 +39,6 @@ template TypeOf(T) {
         alias TypeOf = T*;
 }
 
-@safe
 @nogc
 template PointerTypeOf(T) {
     static if (is(T == class))
@@ -50,7 +47,6 @@ template PointerTypeOf(T) {
         alias PointerTypeOf = T*;
 }
 
-@trusted
 @nogc
 auto emplace(T, Args...)(void[] buf, auto ref Args args) if (is(T == class) || is(T == struct)) {
     enum size_t SIZE = SizeOf!(T);
@@ -74,7 +70,6 @@ auto emplace(T, Args...)(void[] buf, auto ref Args args) if (is(T == class) || i
     return tp;
 }
 
-@trusted
 @nogc
 auto make(T, Args...)(auto ref Args args) if (is(T == class) || is(T == struct)) {
     enum size_t SIZE = SizeOf!(T);
@@ -85,7 +80,6 @@ auto make(T, Args...)(auto ref Args args) if (is(T == class) || is(T == struct))
     return emplace!(T)(p[0 .. SIZE], args);
 }
 
-@trusted
 @nogc
 auto make(T, Args...)(auto ref Args args) if (!is(T : U[], U) && !is(T == class) && !is(T == struct)) {
     static if (args.length == 0)
@@ -100,7 +94,6 @@ auto make(T, Args...)(auto ref Args args) if (!is(T : U[], U) && !is(T == class)
     }
 }
 
-@trusted
 @nogc
 void destruct(T)(T obj) if (is(T == class)) {
     if (obj) {
@@ -112,7 +105,6 @@ void destruct(T)(T obj) if (is(T == class)) {
     }
 }
 
-@trusted
 @nogc
 void destruct(T)(T* p) if (!is(T == class)) {
     if (p) {
@@ -129,20 +121,17 @@ void destruct(T)(T* p) if (!is(T == class)) {
 
 /* Array */
 
-@trusted
 @nogc
 T make(T : U[], U)(size_t n) nothrow {
     return (cast(U*) calloc(T.sizeof, n))[0 .. n];
 }
 
-@trusted
 @nogc
 T* reserve(T)(T* ptr, size_t size) nothrow if (!is(T : U[], U) && !is(T == class)) {
     ptr = cast(T*) realloc(ptr, size * T.sizeof);
     return ptr;
 }
 
-@trusted
 @nogc
 T append(T : U[], U, Args...)(ref T arr, auto ref Args args) nothrow {
     if (arr.length != 0 && args.length != 0) {
@@ -160,7 +149,6 @@ T append(T : U[], U, Args...)(ref T arr, auto ref Args args) nothrow {
     return arr;
 }
 
-@trusted
 @nogc
 void destruct(T : U[], U)(ref T arr) nothrow {
     if (arr.ptr) {
@@ -225,7 +213,6 @@ version (unittest) {
     }
 }
 
-@trusted
 @nogc
 unittest {
     int[] arr = make!(int[])(42);

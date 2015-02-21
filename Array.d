@@ -43,14 +43,11 @@ private:
     size_t _capacity;
 
 public:
-
-    @safe
     @nogc
     this(size_t size) nothrow {
         this.reserve(size);
     }
 
-    @trusted
     @nogc
     this(T[] items) nothrow {
         _length = items.length;
@@ -64,7 +61,6 @@ public:
         }
     }
 
-    @safe
     @nogc
     ~this() {
         m3.m3.destruct(_data);
@@ -76,7 +72,6 @@ public:
         _length = 0;
     }
 
-    @trusted
     @nogc
     T[] release() pure nothrow {
         scope(exit) {
@@ -90,7 +85,6 @@ public:
             return _data[0 .. _length];
     }
 
-    @trusted
     @nogc
     DynamicArray!(T) copy() nothrow {
         static if (is(T == class))
@@ -113,35 +107,30 @@ public:
         return _capacity;
     }
 
-    @safe
     @nogc
     @property
     inout(PtrType) front() inout pure nothrow {
         return _data;
     }
 
-    @trusted
     @nogc
     @property
     inout(PtrType) back() inout pure nothrow {
         return _data + _length - 1;
     }
 
-    @trusted
     @nogc
     @property
     const(PtrType) begin() const pure nothrow {
         return _data - 1;
     }
 
-    @trusted
     @nogc
     @property
     const(PtrType) end() const pure nothrow {
         return _data + _length;
     }
 
-    @safe
     @nogc
     void reserve(size_t size) nothrow {
         if (size > _length) {
@@ -150,7 +139,6 @@ public:
         }
     }
 
-    @trusted
     @nogc
     void append(U : T)(auto ref U item) nothrow {
         if (_length == _capacity)
@@ -164,7 +152,6 @@ public:
         _length++;
     }
 
-    @safe
     @nogc
     void append(U : T)(U[] items) nothrow {
         if ((_length + items.length) > _capacity)
@@ -175,7 +162,6 @@ public:
         }
     }
 
-    @trusted
     @nogc
     auto ref inout(T) opIndex(size_t index) inout pure nothrow in {
         assert(index < _length);
@@ -186,7 +172,6 @@ public:
             return _data[index];
     }
 
-    @trusted
     @nogc
     void opIndexAssign(U : T)(auto ref U item, size_t index) pure nothrow in {
         assert(index < _length);
@@ -194,7 +179,6 @@ public:
         _data[index] = item;
     }
 
-    @trusted
     @nogc
     inout(T[]) opSlice(size_t from, size_t too) inout pure nothrow in {
         assert(from < _length);
@@ -207,7 +191,6 @@ public:
             return _data[from .. too];
     }
 
-    @trusted
     @nogc
     inout(T[]) opSlice() inout pure nothrow {
         static if (is(T == class))
@@ -216,7 +199,6 @@ public:
             return _data[0 .. _length];
     }
 
-    @trusted
     @nogc
     void opSliceAssign(U : T)(auto ref U item, size_t from, size_t too) pure nothrow in {
         assert(from < _length);
@@ -226,13 +208,11 @@ public:
         _data[from .. too] = item;
     }
 
-    @trusted
     @nogc
     void opSliceAssign(U : T)(auto ref U item) pure nothrow {
         _data[0 .. _length] = item;
     }
 
-    @trusted
     @nogc
     void opSliceAssign(U : T)(auto ref U[] items, size_t from, size_t too) pure nothrow in {
         assert(from < _length);
@@ -248,7 +228,6 @@ public:
 version (unittest) {
     class A {
     @nogc:
-    @safe:
 
         int id;
 
@@ -266,7 +245,6 @@ version (unittest) {
     }
 }
 
-@trusted
 @nogc
 unittest {
     DynamicArray!(char) myStr;

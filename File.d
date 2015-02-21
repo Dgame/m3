@@ -11,7 +11,6 @@ enum char[2] WRITE_BINARY = "wb";
 
 public:
 
-@trusted
 @nogc
 char[] read(const string filename) nothrow {
     import std.c.stdio : FILE, SEEK_END, SEEK_SET, fopen, fclose, fseek, ftell, fread;
@@ -29,7 +28,6 @@ char[] read(const string filename) nothrow {
     return str;
 }
 
-@trusted
 @nogc
 void write(T : U[], U)(const string filename, const T content) nothrow {
     import std.c.stdio : FILE, fopen, fclose, fwrite;
@@ -41,7 +39,6 @@ void write(T : U[], U)(const string filename, const T content) nothrow {
     fwrite(content.ptr, size, content.length * size, f);
 }
 
-@safe
 @nogc
 @property
 wchar[] toUTF16(const char[] s) {
@@ -53,7 +50,6 @@ wchar[] toUTF16(const char[] s) {
     return r;
 }
 
-@safe
 @nogc
 @property
 dchar[] toUTF32(const char[] s) {
@@ -65,7 +61,6 @@ dchar[] toUTF32(const char[] s) {
     return r;
 }
 
-@safe
 @nogc
 unittest {
     char[] str = read("test_file.txt");
