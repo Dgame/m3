@@ -16,9 +16,11 @@ struct UniquePtr(T) {
     alias Type = m3.m3.TypeOf!(T);
     alias Deleter = void function(Type) @nogc;
 
+private:
     Type data;
     Deleter deleter;
 
+public:
     @nogc
     this(Type data, Deleter deleter = &m3.m3.destruct!(T)) nothrow {
         this.data = data;
@@ -87,10 +89,12 @@ struct SharedPtr(T) {
     alias Type = m3.m3.TypeOf!(T);
     alias Deleter = void function(Type) @nogc;
 
+private:
     Type data;
     Deleter deleter;
     int* useCounter;
 
+public:
     @nogc
     this(Type data, Deleter deleter = &m3.m3.destruct!(T)) nothrow {
         this.data = data;

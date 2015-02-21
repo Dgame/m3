@@ -25,10 +25,8 @@ unittest {
 
 /* Dynamic Array */
 
-struct DynamicArray(T) {
+struct DynamicArray(T, size_t OFFSET = 3) {
     static assert(!is(T : U[], U), "DynamicArray cannot be used with an array");
-
-    enum size_t OFFSET = 3;
     static assert(OFFSET > 0);
 
 private:
