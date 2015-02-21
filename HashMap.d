@@ -164,7 +164,7 @@ public:
 	}
 
 	@nogc
-	ref inout(V) opIndex(K key) inout pure {
+	ref inout(V) opIndex(K key) inout pure nothrow {
 		auto p = this.get(key);
 		if (p)
 			return *p;
