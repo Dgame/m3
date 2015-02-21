@@ -73,7 +73,6 @@ auto emplace(T, Args...)(void[] buf, auto ref Args args) if (is(T == class) || i
 @nogc
 auto make(T, Args...)(auto ref Args args) if (is(T == class) || is(T == struct)) {
     enum size_t SIZE = SizeOf!(T);
-
     void* p = malloc(SIZE);
     debug printf("Make %s : %p\n", &T.stringof[0], p);
         
@@ -124,27 +123,58 @@ void destruct(T)(T* p) if (!is(T == class)) {
 /* Array */
 
 @nogc
-T make(T : U[], U)(size_t n) nothrow {
-    enum size_t SIZE = SizeOf!(T);
+T make(T : U[], U)(size_t n) {
+    enum size_t SIZE = SizeOf!(U);
+    alias PtrType = PointerTypeOf!(U);
 
-    return (cast(U*) calloc(n, SIZE))[0 .. n];
+    void* p = malloc(n * SIZE);
+
+    static if (is(U == class))
+        T arr = cast(T) (cast(PtrType*) p)[0 .. n];
+    else
+        T arr = (cast(PtrType) p)[0 .. n];
+
+    arr[0 .. n] = U.init;
+
+    return arr;
 }
 
 @nogc
-T* reserve(T)(T* ptr, size_t size) nothrow if (!is(T : U[], U) && !is(T == class)) {
+T* reserve(T)(T* ptr, size_t size) if (!is(T : U[], U) && !is(T == class)) {
     enum size_t SIZE = SizeOf!(T);
 
-    ptr = cast(T*) realloc(ptr, size * SIZE);
-    return ptr;
+    return cast(T*) realloc(ptr, size * SIZE);
 }
 
 @nogc
-T append(T : U[], U, Args...)(ref T arr, auto ref Args args) nothrow {
+T reserve(T : U[], U)(ref T arr, size_t size) {
+    enum size_t SIZE = SizeOf!(U);
+
+    immutable size_t olen = arr.length;
+    immutable size_t nlen = olen + size;
+
+    static if (is(U == class))
+        arr = cast(T) reserve(cast(void**) arr.ptr, nlen)[0 .. nlen];
+    else
+        arr = reserve(arr.ptr, nlen)[0 .. nlen];
+
+    for (size_t i = olen; i < nlen; i++) {
+        arr[i] = U.init;
+    }
+
+    return arr;
+}
+
+@nogc
+T append(T : U[], U, Args...)(ref T arr, auto ref Args args) {
     if (arr.length != 0 && args.length != 0) {
         immutable size_t olen = arr.length;
         immutable size_t nlen = olen + args.length;
         
-        arr = reserve(arr.ptr, nlen)[0 .. nlen];
+        static if (is(U == class))
+            arr = reserve(cast(void**) arr.ptr, nlen)[0 .. nlen];
+        else
+            arr = reserve(arr.ptr, nlen)[0 .. nlen];
         
         size_t i = olen;
         foreach (arg; args) {
@@ -156,7 +186,7 @@ T append(T : U[], U, Args...)(ref T arr, auto ref Args args) nothrow {
 }
 
 @nogc
-void destruct(T : U[], U)(ref T arr) nothrow {
+void destruct(T : U[], U)(ref T arr) {
     if (arr.ptr) {
         static if (__traits(hasMember, U, DTOR)) {
             foreach (ref U item; arr) {
@@ -219,6 +249,7 @@ version (unittest) {
 @nogc
 unittest {
     int[] arr = make!(int[])(42);
+    scope(exit) destruct(arr);
     assert(arr.length == 42);
 
     int[] slice = arr[10 .. 20];
@@ -237,7 +268,6 @@ unittest {
     assert(*p2 == 1);
     assert(**p3 == 42);
 
-    scope(exit) destruct(arr);
     debug printf("A.sizeof = %d, B.sizeof = %d, C.sizeof = %d\n",
         __traits(classInstanceSize, A), __traits(classInstanceSize, B), C.sizeof);
 
@@ -283,4 +313,116 @@ unittest {
     void[SizeOf!(A)] buf3 = void;
     A as3 = emplace!(A)(buf3[], 23);
     assert(as3.id == 23 && as3.getId() == 23);
+
+    /** class array #1 */
+
+    A[] aarr;
+    aarr.reserve(42);
+    scope(exit) destruct(aarr);
+
+    debug printf("aarr.length = %d\n", aarr.length);
+
+    assert(aarr.length == 42);
+    for (size_t i = 0; i < 42; i++) {
+        assert(aarr[i] is null);
+    }
+
+    aarr[0] = as;
+    aarr[1] = as2;
+    aarr[2] = as3;
+
+    assert(aarr[0] is as);
+    assert(aarr[0] !is null);
+
+    assert(aarr[1] is as2);
+    assert(aarr[1] !is null);
+
+    assert(aarr[2] is as3);
+    assert(aarr[2] !is null);
+
+    assert(aarr.length == 42);
+    for (size_t i = 3; i < 42; i++) {
+        assert(aarr[i] is null);
+    }
+
+    /** class array #2 */
+
+    A[] aarr2 = make!(A[])(42);
+    scope(exit) destruct(aarr2);
+
+    debug printf("aarr2.length = %d\n", aarr2.length);
+
+    assert(aarr2.length == 42);
+    for (size_t i = 0; i < 42; i++) {
+        assert(aarr2[i] is null);
+    }
+
+    aarr2[0] = as;
+    aarr2[1] = as2;
+    aarr2[2] = as3;
+
+    assert(aarr2[0] is as);
+    assert(aarr2[0] !is null);
+
+    assert(aarr2[1] is as2);
+    assert(aarr2[1] !is null);
+    
+    assert(aarr2[2] is as3);
+    assert(aarr2[2] !is null);
+
+    assert(aarr2.length == 42);
+    for (size_t i = 3; i < 42; i++) {
+        assert(aarr2[i] is null);
+    }
+
+    /** struct array #1 */
+
+    C[] carr;
+    carr.reserve(23);
+    scope(exit) destruct(carr);
+
+    debug printf("carr.length = %d\n", carr.length);
+
+    assert(carr.length == 23);
+    for (size_t i = 0; i < 23; i++) {
+        assert(carr[i].id == 42);
+    }
+
+    carr[0].id = 1;
+    carr[1].id = 2;
+    carr[2].id = 3;
+
+    assert(carr[0].id == 1);
+    assert(carr[1].id == 2);
+    assert(carr[2].id == 3);
+
+    assert(carr.length == 23);
+    for (size_t i = 3; i < 23; i++) {
+        assert(carr[i].id == 42);
+    }
+    
+    /** struct array #2 */
+
+    C[] carr2 = make!(C[])(23);
+    scope(exit) destruct(carr2);
+
+    debug printf("carr2.length = %d\n", carr2.length);
+
+    assert(carr2.length == 23);
+    for (size_t i = 0; i < 23; i++) {
+        assert(carr2[i].id == 42);
+    }
+
+    carr2[0].id = 1;
+    carr2[1].id = 2;
+    carr2[2].id = 3;
+
+    assert(carr2[0].id == 1);
+    assert(carr2[1].id == 2);
+    assert(carr2[2].id == 3);
+
+    assert(carr2.length == 23);
+    for (size_t i = 3; i < 23; i++) {
+        assert(carr2[i].id == 42);
+    }
 }
