@@ -10,7 +10,6 @@ alias strtod = core.stdc.stdlib.strtod;
 
 static import core.stdc.stdio;
 alias sprintf = core.stdc.stdio.sprintf;
-alias vsprintf = core.stdc.stdio.vsprintf;
 
 static import core.stdc.string;
 alias strlen = core.stdc.string.strlen;
