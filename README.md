@@ -14,5 +14,7 @@ Currently you can
  - append existing arrays
  - allocate and assign structs and basic types
  - allocate classes on stack and heap
+ - convert basic types from and to strings
+ - format strings
  - read from files and write to files
  - convert your data to UTF16 and UTF32
