@@ -47,7 +47,12 @@ unittest {
 size_t hashOf(T : U[], U)(auto ref const T data) pure nothrow {
     size_t hash = 0;
     for (size_t i = 0; i < data.length; i++) {
-        hash = 5 * hash + cast(size_t)(data[i]);
+        static if (is(U : V[], V) || is(U == class) || is(U == struct))
+            immutable size_t h = hashOf(data[i]);
+        else
+            immutable size_t h = cast(size_t)(data[i]);
+        
+        hash = 5 * hash + h;
     }
 
     return hash;
