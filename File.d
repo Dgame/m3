@@ -16,6 +16,7 @@ char[] read(const string filename) nothrow {
     import std.c.stdio : FILE, SEEK_END, SEEK_SET, fopen, fclose, fseek, ftell, fread;
 
     FILE* f = fopen(filename.ptr, READ_BINARY);
+    assert(f, "File can not be opened.");
     scope(exit) fclose(f);
     
     fseek(f, 0, SEEK_END);
@@ -23,7 +24,8 @@ char[] read(const string filename) nothrow {
     fseek(f, 0, SEEK_SET);
 
     char[] str = m3.m3.make!(char[])(fsize);
-    fread(str.ptr, fsize, 1, f);
+    if (str.length)
+        fread(str.ptr, fsize, 1, f);
 
     return str;
 }
@@ -33,6 +35,7 @@ void write(T : U[], U)(const string filename, const T content) nothrow {
     import std.c.stdio : FILE, fopen, fclose, fwrite;
 
     FILE* f = fopen(filename.ptr, WRITE_BINARY);
+    assert(f, "File can not be opened.");
     scope(exit) fclose(f);
     
     enum size_t size = m3.m3.SizeOf!(U);
@@ -43,6 +46,9 @@ void write(T : U[], U)(const string filename, const T content) nothrow {
 @property
 wchar[] toUTF16(const char[] s) {
     wchar[] r = m3.m3.make!(wchar[])(s.length); // r will never be longer than s
+    if (!r.length)
+        return null;
+
     foreach (immutable size_t i, wchar c; s) {
         r[i] = c;
     }
@@ -54,6 +60,9 @@ wchar[] toUTF16(const char[] s) {
 @property
 dchar[] toUTF32(const char[] s) {
     dchar[] r = m3.m3.make!(dchar[])(s.length); // r will never be longer than s
+    if (!r.length)
+        return null;
+    
     foreach (immutable size_t i, dchar c; s) {
         r[i] = c;
     }

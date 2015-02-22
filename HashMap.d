@@ -101,7 +101,8 @@ private:
 
     @nogc
     void _putEntry(size_t hash, size_t index, V value) {
-        assert(_entries[index] is null);
+        assert(_entries[index] is null, "Entry will be overriden.");
+
         _entries[index] = m3.m3.make!(Entry!(V))(value, hash);
         _length++;
         

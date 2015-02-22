@@ -38,7 +38,7 @@ template TypeOf(T) {
 @nogc
 auto emplace(T, Args...)(void[] buf, auto ref Args args) if (is(T == class) || is(T == struct)) {
     enum size_t SIZE = SizeOf!(T);
-    assert(buf.length == SIZE);
+    assert(buf.length == SIZE, "No enough space in buf");
     alias Type = TypeOf!(T);
 
     static if (is(T == class)) {
