@@ -7,6 +7,8 @@ debug alias printf = m3.m3.printf;
 @safe
 @nogc
 size_t indexFor(size_t h, size_t size) pure nothrow {
+	assert(size > 0);
+
     return h % (size - 1);
 }
 
