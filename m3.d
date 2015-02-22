@@ -240,10 +240,28 @@ version (unittest) {
 unittest {
     int[] arr = make!(int[])(42);
     scope(exit) destruct(arr);
+
     assert(arr.length == 42);
 
     int[] slice = arr[10 .. 20];
     assert(slice.length == 10);
+
+    string[] arr2 = make!(string[])(2);
+    scope(exit) destruct(arr2);
+
+    assert(arr2.length == 2);
+
+    assert(arr2[0].length == 0);
+    assert(arr2[1].length == 0);
+
+    arr2[0] = "Foo";
+    arr2[1] = "Quatz";
+
+    assert(arr2[0].length == 3);
+    assert(arr2[1].length == 5);
+
+    assert(arr2[0] == "Foo");
+    assert(arr2[1] == "Quatz");
 
     int* p1 = make!(int)();
     int* p2 = make!(int)(1);

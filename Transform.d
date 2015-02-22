@@ -13,11 +13,14 @@ alias sprintf = core.stdc.stdio.sprintf;
 
 static import core.stdc.string;
 alias strlen = core.stdc.string.strlen;
+alias strtok = core.stdc.string.strtok;
 
 static import std.traits;
 alias isNumeric = std.traits.isNumeric;
 alias isBoolean = std.traits.isBoolean;
 alias isSomeString = std.traits.isSomeString;
+
+static import m3.m3;
 
 public:
 
@@ -113,6 +116,36 @@ string format(size_t SIZE = 256, Args...)(string format, auto ref Args args) not
     return cast(immutable) buf[0 .. i];
 }
 
+@nogc
+string[] split(string str, char delim) nothrow {
+    size_t count = 0;
+    foreach (char c; str) {
+        if (c == delim)
+            count++;
+    }
+
+    if (count == 0)
+        return null;
+
+    count++;
+
+    string[] result = m3.m3.make!(string[])(count);
+    size_t i = 0;
+
+    char* p = strtok(cast(char*) str.ptr, &delim);
+    result[i++] = cast(immutable) p[0 .. strlen(p)];
+
+    while (count > i) {
+        p = strtok(null, &delim);
+        if (p)
+            result[i++] = cast(immutable) p[0 .. strlen(p)];
+        else
+            break;
+    }
+
+    return result;
+}
+
 version (unittest) {
     class A {
         @nogc
@@ -173,4 +206,16 @@ unittest {
     B b;
 
     assert(format(" A : {}, B = {}", a, b) == " A : null, B = B");
+
+    // split
+
+    string str = "Foo:Bar:Quatz";
+    auto result = str.split(':');
+
+    assert(result.length == 3);
+    assert(result[0] == "Foo");
+    assert(result[1] == "Bar");
+    assert(result[2] == "Quatz");
+
+    m3.m3.destruct(result);
 }
