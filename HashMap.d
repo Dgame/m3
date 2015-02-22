@@ -76,6 +76,26 @@ private:
     size_t _capacity;
 
     @nogc
+    ~this() {
+        for (size_t i = 0; i < _capacity; i++) {
+            if (_entries[i])
+                m3.m3.destruct(_entries[i]);
+        }
+
+        m3.m3.destruct(_entries);
+    }
+
+    @nogc
+    void clear() {
+        _length = 0;
+
+        for (size_t i = 0; i < _capacity; i++) {
+            if (_entries[i])
+                m3.m3.destruct(_entries[i]);
+        }
+    }
+
+    @nogc
     void _rehash(size_t newCapacity) {
         if (newCapacity == 0)
             return;
