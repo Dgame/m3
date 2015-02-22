@@ -67,6 +67,9 @@ struct Entry(T) {
 public:
 
 struct HashMap(K, V, alias HashOf = hashOf, size_t INIT_CAPACITY = 16, float REHASH_PERCENT = 0.75f) {
+    static assert(INIT_CAPACITY > 0);
+    static assert(REHASH_PERCENT > 0);
+
 private:
     Entry!(V)*[] _entries;
     size_t _length;
