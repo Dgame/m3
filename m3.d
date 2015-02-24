@@ -76,11 +76,15 @@ auto make(T, Args...)(auto ref Args args) if (!is(T : U[], U) && !is(T == class)
     enum size_t SIZE = SizeOf!(T);
     T* p = cast(T*) malloc(SIZE);
 
-    static if (args.length == 0)
-        *p = T.init;
-    else {
-        static assert(args.length == 1, "Too many parameters!");
-        *p = args[0];
+    static if (!is(T == void)) {
+        static if (args.length == 0)
+            *p = T.init;
+        else {
+            static assert(args.length == 1, "Too many parameters!");
+            *p = args[0];
+        }
+    } else {
+        static assert(args.length == 0, "void cannot have arguments");
     }
 
     return p;
@@ -124,7 +128,8 @@ T make(T : U[], U)(size_t n) {
     else
         T arr = (cast(U*) p)[0 .. n];
 
-    arr[0 .. n] = U.init;
+    static if (!is(U == void))
+        arr[0 .. n] = U.init;
 
     return arr;
 }
@@ -238,6 +243,11 @@ version (unittest) {
 
 @nogc
 unittest {
+    void[] mem = make!(void[])(23);
+    scope(exit) destruct(mem);
+
+    assert(mem.length == 23);
+
     int[] arr = make!(int[])(42);
     scope(exit) destruct(arr);
 
