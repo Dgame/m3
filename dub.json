@@ -1,0 +1,8 @@
+{
+    "name":         "m3",
+    "description":  "manual memory management for the D programming language",
+    "homepage":     "https://github.com/Dgame/m3",
+    "authors":  	["Randy Schütt"],
+    "license":      "Zlib License",
+    "sourcePaths":  ["."]
+}
