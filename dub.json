@@ -5,6 +5,8 @@
     "authors":  	["Randy Schütt"],
     "license":      "zlib",
 
+    "sourcePaths": ["."],
+
     "configurations": [
         {
             "name": "lib",
