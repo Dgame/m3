@@ -33,10 +33,9 @@ struct DynamicArray(T, size_t OFFSET = 3) {
     static assert(OFFSET > 0);
 
 private:
-    static if (is(T == class))
-        void** _data;
-    else
-        T* _data;
+    alias ArrayPtrType = m3.m3.ArrayPtrTypeOf!(T);
+
+    ArrayPtrType _data;
 
     size_t _length;
     size_t _capacity;

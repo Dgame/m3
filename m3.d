@@ -166,6 +166,27 @@ unittest {
     static assert(is(TypeOf!(string[]) == immutable(char)**));
 }
 
+template ArrayPtrTypeOf(T) {
+    static if (isArray!(T))
+        alias ArrayPtrTypeOf = TypeOf!(T);
+    else static if (is(T == class))
+        alias ArrayPtrTypeOf = void**;
+    else
+        alias ArrayPtrTypeOf = T*;
+}
+
+unittest {
+    class _C { }
+    struct _D { }
+
+    static assert(is(ArrayPtrTypeOf!(_C) == void**));
+    static assert(is(ArrayPtrTypeOf!(_D) == _D*));
+    static assert(is(ArrayPtrTypeOf!(int) == int*));
+    static assert(is(ArrayPtrTypeOf!(void) == void*));
+    static assert(is(ArrayPtrTypeOf!(int[]) == int*));
+    static assert(is(ArrayPtrTypeOf!(void[]) == void*));
+}
+
 @nogc
 auto emplace(T, Args...)(void[] buf, auto ref Args args) if (is(T == class) || is(T == struct)) {
     enum size_t SIZE = SizeOf!(T);
