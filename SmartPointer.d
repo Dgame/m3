@@ -106,13 +106,8 @@ public:
 
     @nogc
     this(this) {
-        if (_useCounter) {
-            _data = this._data;
-            _deleter = this._deleter;
-            _useCounter = this._useCounter;
-
+        if (_useCounter)
             (*_useCounter)++;
-        }
     }
 
     @nogc
