@@ -7,6 +7,12 @@ alias malloc = core.stdc.stdlib.malloc;
 alias realloc = core.stdc.stdlib.realloc;
 alias free = core.stdc.stdlib.free;
 
+static import std.traits;
+alias isArray = std.traits.isArray;
+
+static import std.typecons;
+alias TypeTuple = std.typecons.TypeTuple;
+
 enum CTOR = "__ctor";
 enum DTOR = "__dtor";
 
@@ -19,20 +25,145 @@ public:
 
 /* Class and Struct */
 
-@nogc
+template DimOf(T) {
+    static assert(!is(T : V[K], V, K), "Cannot figure out the dimension of an assocative array.");
+
+    static if (is(T : U[], U))
+        enum size_t DimOf = 1 + DimOf!(U);
+    else static if (is(T : U*, U))
+        enum size_t DimOf = 1 + DimOf!(U);
+    else
+        enum size_t DimOf = 0;
+}
+
+unittest {
+    static assert(DimOf!(void) == 0);
+    static assert(DimOf!(void[]) == 1);
+    static assert(DimOf!(void[][]) == 2);
+
+    static assert(DimOf!(int) == 0);
+    static assert(DimOf!(int[]) == 1);
+    static assert(DimOf!(int[][]) == 2);
+    static assert(DimOf!(int[][][]) == 3);
+
+    static assert(DimOf!(string) == 1);
+    static assert(DimOf!(string[]) == 2);
+
+    static assert(DimOf!(int*) == 1);
+    static assert(DimOf!(int**) == 2);
+    static assert(DimOf!(int[]**) == 3);
+    static assert(DimOf!(int[]*[]*) == 4);
+}
+
+template BasicTypeOf(T) {
+    static assert(!is(T : V[K], V, K), "Cannot figure out the basic type of an assocative array.");
+
+    static if (is(T : U[], U))
+        alias BasicTypeOf = BasicTypeOf!(U);
+    else
+        alias BasicTypeOf = T;
+}
+
+unittest {
+    static assert(is(BasicTypeOf!(void) == void));
+    static assert(is(BasicTypeOf!(void[]) == void));
+    static assert(is(BasicTypeOf!(void[][]) == void));
+
+    static assert(is(BasicTypeOf!(int) == int));
+    static assert(is(BasicTypeOf!(int[]) == int));
+    static assert(is(BasicTypeOf!(int[][]) == int));
+    static assert(is(BasicTypeOf!(int[][][]) == int));
+
+    static assert(is(BasicTypeOf!(string) == immutable(char)));
+    static assert(is(BasicTypeOf!(string[]) == immutable(char)));
+}
+
+template NextTypeOf(T) {
+    static assert(!is(T : V[K], V, K), "Cannot figure out the next type of an assocative array.");
+
+    static if (is(T : U[], U))
+        alias NextTypeOf = U;
+    else
+        alias NextTypeOf = T;
+}
+
+unittest {
+    static assert(is(NextTypeOf!(void) == void));
+    static assert(is(NextTypeOf!(void[]) == void));
+    static assert(is(NextTypeOf!(void[][]) == void[]));
+
+    static assert(is(NextTypeOf!(int) == int));
+    static assert(is(NextTypeOf!(int[]) == int));
+    static assert(is(NextTypeOf!(int[][]) == int[]));
+    static assert(is(NextTypeOf!(int[][][]) == int[][]));
+
+    static assert(is(NextTypeOf!(string) == immutable(char)));
+    static assert(is(NextTypeOf!(string[]) == string));
+}
+
 template SizeOf(T) {
+    static assert(!is(T : V[K], V, K), "Cannot figure out the size of an assocative array.");
+
     static if (is(T == class))
         enum size_t SizeOf = __traits(classInstanceSize, T);
     else
         enum size_t SizeOf = T.sizeof;
 }
 
-@nogc
-template TypeOf(T) {
-    static if (is(T == class))
-        alias TypeOf = T;
-    else
+unittest {
+    static assert(SizeOf!(void) == 1);
+    static assert(SizeOf!(void[]) == 8);
+    static assert(SizeOf!(void[][]) == 8);
+
+    static assert(SizeOf!(int) == 4);
+    static assert(SizeOf!(int[]) == 8);
+    static assert(SizeOf!(int[][]) == 8);
+    static assert(SizeOf!(int[][][]) == 8);
+
+    static assert(SizeOf!(string) == 8);
+    static assert(SizeOf!(string[]) == 8);
+}
+
+enum TypeOfClass : ubyte {
+    AsClass,
+    AsVoid
+}
+
+template TypeOf(T, TypeOfClass toc = TypeOfClass.AsClass) {
+    static assert(!is(T : V[K], V, K), "Cannot figure out the type of an assocative array.");
+
+    static if (isArray!(T)) {
+        enum size_t DIM = DimOf!(T);
+        static assert(DIM < 5, "Too high dimension");
+
+        alias Base = BasicTypeOf!(T);
+        static if (is(Base == class))
+            alias Bases = TypeTuple!(void**, void**, void***, void****, void*****);
+        else
+            alias Bases = TypeTuple!(Base*, Base*, Base**, Base***, Base****);
+
+        alias TypeOf = Bases[DIM];
+    } else static if (is(T == class)) {
+        static if (toc == TypeOfClass.AsVoid)
+            alias TypeOf = void*;
+        else
+            alias TypeOf = T;
+    } else
         alias TypeOf = T*;
+}
+
+unittest {
+    static assert(is(TypeOf!(void) == void*));
+    static assert(is(TypeOf!(void[]) == void*));
+    static assert(is(TypeOf!(void[][]) == void**));
+
+    static assert(is(TypeOf!(int) == int*));
+    static assert(is(TypeOf!(int[]) == int*));
+    static assert(is(TypeOf!(int[][]) == int**));
+    static assert(is(TypeOf!(int[][][]) == int***));
+
+    static assert(is(TypeOf!(string) == immutable(char)*));
+    static assert(is(TypeOf!(string[]) == immutable(char)**));
 }
 
 @nogc
@@ -119,17 +250,22 @@ void destruct(T)(T* p) if (!is(T == class)) {
 /* Array */
 
 @nogc
-T make(T : U[], U)(size_t n) {
-    enum size_t SIZE = SizeOf!(U);
+T make(T)(size_t n) if (isArray!(T)) {
+    alias Base = BasicTypeOf!(T);
+    alias Next = NextTypeOf!(T);
+    enum size_t SIZE = SizeOf!(Next);
+
     void* p = malloc(n * SIZE);
 
-    static if (is(U == class))
-        T arr = cast(T) (cast(void**) p)[0 .. n];
-    else
-        T arr = (cast(U*) p)[0 .. n];
+    static if (is(Base == class)) {
+        alias Type = TypeOf!(T);
 
-    static if (!is(U == void))
-        arr[0 .. n] = U.init;
+        T arr = cast(T) (cast(Type) p)[0 .. n];
+    }  else
+        T arr = (cast(Next*) p)[0 .. n];
+
+    static if (!is(Base == void))
+        arr[0 .. n] = Next.init;
 
     return arr;
 }
@@ -148,9 +284,11 @@ T reserve(T : U[], U)(ref T arr, size_t size) {
     immutable size_t olen = arr.length;
     immutable size_t nlen = olen + size;
 
-    static if (is(U == class))
-        arr = cast(T) reserve(cast(void**) arr.ptr, nlen)[0 .. nlen];
-    else
+    static if (is(U == class)) {
+        alias Type = TypeOf!(T);
+
+        arr = cast(T) reserve(cast(Type) arr.ptr, nlen)[0 .. nlen];
+    } else
         arr = reserve(arr.ptr, nlen)[0 .. nlen];
 
     for (size_t i = olen; i < nlen; i++) {
@@ -166,9 +304,11 @@ T append(T : U[], U, Args...)(ref T arr, auto ref Args args) {
         immutable size_t olen = arr.length;
         immutable size_t nlen = olen + args.length;
         
-        static if (is(U == class))
-            arr = reserve(cast(void**) arr.ptr, nlen)[0 .. nlen];
-        else
+        static if (is(U == class)) {
+            alias Type = TypeOf!(T);
+
+            arr = reserve(cast(Type) arr.ptr, nlen)[0 .. nlen];
+        } else
             arr = reserve(arr.ptr, nlen)[0 .. nlen];
         
         size_t i = olen;
@@ -183,9 +323,21 @@ T append(T : U[], U, Args...)(ref T arr, auto ref Args args) {
 @nogc
 void destruct(T : U[], U)(ref T arr) {
     if (arr.ptr) {
-        static if (__traits(hasMember, U, DTOR)) {
-            foreach (ref U item; arr) {
-                item.__dtor();
+        alias Base = BasicTypeOf!(T);
+
+        static if (__traits(hasMember, Base, DTOR)) {
+            enum size_t DIM = DimOf!(T);
+
+            static if (DIM > 1) {
+                for (size_t i = 0; i < DIM; i++) {
+                    foreach (ref Base item; arr[i]) {
+                        item.__dtor();
+                    }
+                }
+            } else {
+                foreach (ref Base item; arr) {
+                    item.__dtor();
+                }
             }
         }
         
