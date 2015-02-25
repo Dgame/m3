@@ -1,8 +1,10 @@
 private:
 
 static import m3.m3;
-
 debug alias printf = m3.m3.printf;
+
+static import std.traits;
+alias isArray = std.traits.isArray;
 
 @safe
 @nogc
@@ -14,7 +16,7 @@ size_t indexFor(size_t h, size_t size) pure nothrow {
 
 @trusted
 @nogc
-size_t hashOf(T)(auto ref const T data) pure nothrow if (!is(T : U[], U) && !is(T == class)) {
+size_t hashOf(T)(auto ref const T data) pure nothrow if (!isArray!(T) && !is(T == class)) {
     return cast(size_t) &data;
 }
 
@@ -31,7 +33,7 @@ unittest {
 
 @trusted
 @nogc
-size_t hashOf(T)(auto ref const T data) pure nothrow if (!is(T : U[], U) && is(T == class)) {
+size_t hashOf(T)(auto ref const T data) pure nothrow if (!isArray!(T) && is(T == class)) {
     return cast(size_t) cast(void*) &data;
 }
 
@@ -44,10 +46,12 @@ unittest {
 
 @safe
 @nogc
-size_t hashOf(T : U[], U)(auto ref const T data) pure nothrow {
+size_t hashOf(T)(auto ref const T data) pure nothrow if (isArray!(T)) {
+    alias Next = m3.m3.NextTypeOf!(T);
+
     size_t hash = 0;
     for (size_t i = 0; i < data.length; i++) {
-        static if (is(U : V[], V) || is(U == class) || is(U == struct))
+        static if (isArray!(Next) || is(Next == class) || is(Next == struct))
             immutable size_t h = hashOf(data[i]);
         else
             immutable size_t h = cast(size_t)(data[i]);

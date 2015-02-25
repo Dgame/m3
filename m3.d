@@ -203,7 +203,7 @@ auto make(T, Args...)(auto ref Args args) if (is(T == class) || is(T == struct))
 }
 
 @nogc
-auto make(T, Args...)(auto ref Args args) if (!is(T : U[], U) && !is(T == class) && !is(T == struct)) {
+auto make(T, Args...)(auto ref Args args) if (!isArray!(T) && !is(T == class) && !is(T == struct)) {
     enum size_t SIZE = SizeOf!(T);
     T* p = cast(T*) malloc(SIZE);
 
@@ -271,20 +271,22 @@ T make(T)(size_t n) if (isArray!(T)) {
 }
 
 @nogc
-T* reserve(T)(T* ptr, size_t size) if (!is(T : U[], U) && !is(T == class)) {
+T* reserve(T)(T* ptr, size_t size) if (!isArray!(T) && !is(T == class)) {
     enum size_t SIZE = SizeOf!(T);
 
     return cast(T*) realloc(ptr, size * SIZE);
 }
 
 @nogc
-T reserve(T : U[], U)(ref T arr, size_t size) {
-    enum size_t SIZE = SizeOf!(U);
+T reserve(T)(ref T arr, size_t size) if (isArray!(T)) {
+    alias Base = BasicTypeOf!(T);
+    alias Next = NextTypeOf!(T);
+    enum size_t SIZE = SizeOf!(Next);
 
     immutable size_t olen = arr.length;
     immutable size_t nlen = olen + size;
 
-    static if (is(U == class)) {
+    static if (is(Base == class)) {
         alias Type = TypeOf!(T);
 
         arr = cast(T) reserve(cast(Type) arr.ptr, nlen)[0 .. nlen];
@@ -292,19 +294,20 @@ T reserve(T : U[], U)(ref T arr, size_t size) {
         arr = reserve(arr.ptr, nlen)[0 .. nlen];
 
     for (size_t i = olen; i < nlen; i++) {
-        arr[i] = U.init;
+        arr[i] = Next.init;
     }
 
     return arr;
 }
 
 @nogc
-T append(T : U[], U, Args...)(ref T arr, auto ref Args args) {
+T append(T, Args...)(ref T arr, auto ref Args args) if (isArray!(T)) {
     if (arr.length != 0 && args.length != 0) {
         immutable size_t olen = arr.length;
         immutable size_t nlen = olen + args.length;
         
-        static if (is(U == class)) {
+        alias Base = BasicTypeOf!(T);
+        static if (is(Base == class)) {
             alias Type = TypeOf!(T);
 
             arr = reserve(cast(Type) arr.ptr, nlen)[0 .. nlen];
@@ -321,7 +324,7 @@ T append(T : U[], U, Args...)(ref T arr, auto ref Args args) {
 }
 
 @nogc
-void destruct(T : U[], U)(ref T arr) {
+void destruct(T)(ref T arr) if (isArray!(T)) {
     if (arr.ptr) {
         alias Base = BasicTypeOf!(T);
 

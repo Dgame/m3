@@ -4,10 +4,13 @@ private:
 
 static import m3.m3;
 
+static import std.traits;
+alias isArray = std.traits.isArray;
+
 public:
 
 struct DoubleLinkedList(T) {
-    static assert(!is(T : U[], U), "Double Linked List cannot be used with an array");
+    static assert(!isArray!(T), "Double Linked List cannot be used with an array");
 
 static struct Node {
     T value;

@@ -3,15 +3,17 @@ module m3.SmartPointer;
 private:
 
 static import m3.m3;
-
 debug alias printf = m3.m3.printf;
+
+static import std.traits;
+alias isArray = std.traits.isArray;
 
 public:
 
 /* Unique Ptr */
 
 struct UniquePtr(T) {
-    static assert(!is(T : U[], U), "Arrays aren't allowed for UniquePtr");
+    static assert(!isArray!(T), "Arrays aren't allowed for UniquePtr");
 
     alias Type = m3.m3.TypeOf!(T);
     alias Deleter = void function(Type) @nogc;
@@ -84,7 +86,7 @@ UniquePtr!(T) makeUnique(T, Args...)(UniquePtr!(T).Deleter deleter, auto ref Arg
 /* Shared Ptr */
 
 struct SharedPtr(T) {
-    static assert(!is(T : U[], U), "Arrays aren't allowed for SharedPtr");
+    static assert(!isArray!(T), "Arrays aren't allowed for SharedPtr");
 
     alias Type = m3.m3.TypeOf!(T);
     alias Deleter = void function(Type) @nogc;

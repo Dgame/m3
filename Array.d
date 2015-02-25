@@ -5,13 +5,16 @@ private:
 static import m3.m3;
 debug alias printf = m3.m3.printf;
 
+static import std.traits;
+alias isArray = std.traits.isArray;
+
 public:
 
 /* Static Array */
 
 @safe
 @nogc
-T[n] s(T, size_t n)(auto ref T[n] values) pure nothrow if (!is(T : U[], U)) {
+T[n] s(T, size_t n)(auto ref T[n] values) pure nothrow if (!isArray!(T)) {
     return values;
 }
 
@@ -26,7 +29,7 @@ unittest {
 /* Dynamic Array */
 
 struct DynamicArray(T, size_t OFFSET = 3) {
-    static assert(!is(T : U[], U), "DynamicArray cannot be used with an array");
+    static assert(!isArray!(T), "DynamicArray cannot be used with an array");
     static assert(OFFSET > 0);
 
 private:

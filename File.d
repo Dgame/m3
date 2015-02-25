@@ -31,7 +31,7 @@ char[] read(const string filename) nothrow {
 }
 
 @nogc
-void write(T : U[], U)(const string filename, const T content) nothrow {
+void write(T)(const string filename, const T[] content) nothrow {
     import std.c.stdio : FILE, fopen, fclose, fwrite;
 
     FILE* f = fopen(filename.ptr, WRITE_BINARY);

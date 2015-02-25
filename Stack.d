@@ -3,13 +3,15 @@ module m3.Stack;
 private:
 
 static import m3.m3;
-
 debug alias printf = m3.m3.printf;
+
+static import std.traits;
+alias isArray = std.traits.isArray;
 
 public:
 
 struct Stack(T) {
-    static assert(!is(T : U[], U), "Stack cannot be used with an array");
+    static assert(!isArray!(T), "Stack cannot be used with an array");
 
 static struct Node {
     T value;
