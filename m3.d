@@ -302,8 +302,7 @@ T* reserve(T)(T* ptr, size_t size) if (!isArray!(T) && !is(T == class)) {
 T reserve(T)(ref T arr, size_t size) if (isArray!(T)) {
     alias Base = BasicTypeOf!(T);
     alias Next = NextTypeOf!(T);
-    enum size_t SIZE = SizeOf!(Next);
-
+    
     immutable size_t olen = arr.length;
     immutable size_t nlen = olen + size;
 
