@@ -4,7 +4,8 @@
     "homepage":     "https://github.com/Dgame/m3",
     "authors":  	["Randy Schütt"],
     "license":      "zlib",
+    "sourcePaths":  ["."],
 
     "targetName": "m3",
-    "targetPath": "lib",
+    "targetPath": "library",
 }
