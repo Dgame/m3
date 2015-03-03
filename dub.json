@@ -5,12 +5,6 @@
     "authors":  	["Randy Schütt"],
     "license":      "zlib",
 
-    "sourcePaths": ["."],
-
-    "configurations": [
-        {
-            "name": "lib",
-            "targetType": "sourceLibrary"
-        }
-    ]
+    "targetName": "m3",
+    "targetPath": "lib",
 }
