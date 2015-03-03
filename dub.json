@@ -7,5 +7,5 @@
     "sourcePaths":  ["."],
 
     "targetName": "m3",
-    "targetPath": "library",
+    "targetPath": "lib",
 }
