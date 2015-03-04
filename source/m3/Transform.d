@@ -19,6 +19,7 @@ static import std.traits;
 alias isNumeric = std.traits.isNumeric;
 alias isBoolean = std.traits.isBoolean;
 alias isSomeString = std.traits.isSomeString;
+alias isSomeChar = std.traits.isSomeChar;
 
 static import m3.m3;
 
@@ -83,7 +84,10 @@ string format(size_t SIZE = 256, Args...)(string format, auto ref Args args) not
                 if ((j + 1) < format.length && format[j + 1] == '}') {
                     static if (isSomeString!(Args[ai]))
                         immutable string s = arg;
-                    else static if (is(Args[ai] == class))
+                    else static if (isSomeChar!(Args[ai])) {
+                        const char[1] str = arg;
+                        immutable string s = cast(immutable) str;
+                    } else static if (is(Args[ai] == class))
                         immutable string s = arg ? arg.toString() : null.stringof;
                     else static if (is(Args[ai] == struct))
                         immutable string s = arg.toString();
@@ -194,6 +198,8 @@ unittest {
 
     // Format
 
+    assert(format("test_{}.png", 1) == "test_1.png");
+    assert(format("test_{}.png", '0') == "test_0.png");
     assert(format("{} + {} = {}", 42, 23, 42 + 23) == "42 + 23 = 65");
     assert(format("Erst kommt die {}, dann die {} und am Ende die {}. Nicht zu vergessen die {}, die kommt vor {}.", 11, 12, 42, 23, 42) ==
         "Erst kommt die 11, dann die 12 und am Ende die 42. Nicht zu vergessen die 23, die kommt vor 42.");
