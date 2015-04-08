@@ -3,7 +3,6 @@ module m3.Array;
 private:
 
 static import m3.m3;
-debug alias printf = m3.m3.printf;
 
 static import std.traits;
 alias isArray = std.traits.isArray;

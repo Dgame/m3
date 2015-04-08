@@ -224,7 +224,7 @@ auto make(T, Args...)(auto ref Args args) if (is(T == class) || is(T == struct))
 }
 
 @nogc
-auto make(T, Args...)(auto ref Args args) if (!isArray!(T) && !is(T == class) && !is(T == struct)) {
+auto make(T, Args...)(auto ref Args args) nothrow if (!isArray!(T) && !is(T == class) && !is(T == struct)) {
     enum size_t SIZE = SizeOf!(T);
     T* p = cast(T*) malloc(SIZE);
 
@@ -271,7 +271,7 @@ void destruct(T)(T* p) if (!is(T == class)) {
 /* Array */
 
 @nogc
-T make(T)(size_t n) if (isArray!(T)) {
+T make(T)(size_t n) nothrow if (isArray!(T)) {
     alias Base = BasicTypeOf!(T);
     alias Next = NextTypeOf!(T);
     enum size_t SIZE = SizeOf!(Next);
@@ -292,7 +292,7 @@ T make(T)(size_t n) if (isArray!(T)) {
 }
 
 @nogc
-T* reserve(T)(T* ptr, size_t size) if (!isArray!(T) && !is(T == class)) {
+T* reserve(T)(T* ptr, size_t size) nothrow if (!isArray!(T) && !is(T == class)) {
     enum size_t SIZE = SizeOf!(T);
 
     return cast(T*) realloc(ptr, size * SIZE);
