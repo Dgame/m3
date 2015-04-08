@@ -4,6 +4,11 @@ private:
 
 static import m3.m3;
 
+debug(m3) {
+    static import core.stdc.stdio;
+    alias printf = core.stdc.stdio.printf;
+}
+
 static import std.traits;
 alias isArray = std.traits.isArray;
 
@@ -233,7 +238,7 @@ version (unittest) {
         }
         
         ~this() {
-            debug printf("DTor A\n");
+            debug(m3) printf("DTor A\n");
         }
         
         int getId() const {

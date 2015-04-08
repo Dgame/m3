@@ -1,7 +1,11 @@
 private:
 
 static import m3.m3;
-debug alias printf = m3.m3.printf;
+
+debug(m3) {
+    static import core.stdc.stdio;
+    alias printf = core.stdc.stdio.printf;
+}
 
 static import std.traits;
 alias isArray = std.traits.isArray;
@@ -89,7 +93,7 @@ private:
         if (newCapacity == 0)
             return;
 
-        debug printf("Rehash: %d\n", newCapacity);
+        debug(m3) printf("Rehash: %d\n", newCapacity);
 
         immutable size_t old_capacity = _capacity;
         _capacity = newCapacity;
@@ -100,7 +104,7 @@ private:
                 continue;
 
             immutable size_t ni = indexFor(_entries[i].hash, _capacity);
-            debug printf("Move hash %d from index %d to index %d\n", _entries[i].hash, i, ni);
+            debug(m3) printf("Move hash %d from index %d to index %d\n", _entries[i].hash, i, ni);
             if (ni != i) {
                 _entries[ni] = _entries[i];
                 _entries[i] = null;
@@ -115,7 +119,7 @@ private:
         _entries[index] = m3.m3.make!(Entry!(V))(value, hash);
         _length++;
         
-        debug printf("Put entry with hash %d on index %d\n", hash, index);
+        debug(m3) printf("Put entry with hash %d on index %d\n", hash, index);
     }
 
 public:
@@ -147,7 +151,7 @@ public:
         immutable size_t h = HashOf(key);
         immutable size_t i = indexFor(h, _capacity);
         
-        debug printf("Get entry with hash %d on index %d\n", h, i);
+        debug(m3) printf("Get entry with hash %d on index %d\n", h, i);
         
         auto e = _entries[i];
         if (e)
@@ -166,7 +170,7 @@ public:
 
         auto e = _entries[i];
         if (e) { // collision -> override
-            debug printf("Replace index %d with hash %d. Was before hash %d. Data: %d <-> %d\n", i, h, e.data, value);
+            debug(m3) printf("Replace index %d with hash %d. Was before hash %d. Data: %d <-> %d\n", i, h, e.data, value);
 
             e.data = value;
             e.hash = h;
@@ -238,8 +242,8 @@ unittest {
     telNr.put("Quatz", 753);
     telNr.put("Abc", 159);
 
-    debug printf("Length = %d\n", telNr.length);
-    debug printf("Capacity = %d\n", telNr.capacity);
+    debug(m3) printf("Length = %d\n", telNr.length);
+    debug(m3) printf("Capacity = %d\n", telNr.capacity);
 
     assert(telNr.length == 4);
     assert(telNr.capacity == 32);

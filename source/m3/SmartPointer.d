@@ -3,7 +3,11 @@ module m3.SmartPointer;
 private:
 
 static import m3.m3;
-debug alias printf = m3.m3.printf;
+
+debug(m3) {
+    static import core.stdc.stdio;
+    alias printf = core.stdc.stdio.printf;
+}
 
 static import std.traits;
 alias isArray = std.traits.isArray;
@@ -185,7 +189,7 @@ version (unittest) {
         }
         
         ~this() {
-            debug printf("DTor A\n");
+            debug(m3) printf("DTor A\n");
         }
         
         int getId() const {
@@ -201,7 +205,7 @@ version (unittest) {
         }
         
         ~this() {
-            debug printf("DTor B\n");
+            debug(m3) printf("DTor B\n");
         }
     }
 
@@ -215,7 +219,7 @@ version (unittest) {
         }
 
         ~this() {
-            debug printf("DTor C\n");
+            debug(m3) printf("DTor C\n");
         }
         
         int getId() const {
@@ -235,7 +239,7 @@ version (unittest) {
 
 @nogc
 unittest {
-    debug printf("\n ---- UniquePtr Test started ---- \n");
+    debug(m3) printf("\n ---- UniquePtr Test started ---- \n");
 
     UniquePtr!(C) uc = makeUnique!(C)(42);
     assert(uc.id == 42 && uc.getId() == 42);
@@ -262,17 +266,17 @@ unittest {
     {
         _SDL_Surface* sdl_srfc = m3.m3.make!(_SDL_Surface);
         //UniquePtr!(_SDL_Surface).Deleter sdl_del = (_SDL_Surface* p) @nogc { _SDL_FreeSurface(p); p = null; };
-        UniquePtr!(_SDL_Surface) srfc = makeUnique!(_SDL_Surface)(sdl_srfc, function(_SDL_Surface* p) { _SDL_FreeSurface(p); p = null; debug printf("UniquePtr: _SDL_FreeSurface\n"); });
+        UniquePtr!(_SDL_Surface) srfc = makeUnique!(_SDL_Surface)(sdl_srfc, function(_SDL_Surface* p) { _SDL_FreeSurface(p); p = null; debug(m3)printf("UniquePtr: _SDL_FreeSurface\n"); });
     }
 
     assert(sdl_deleter == 1);
 
-    debug printf("\n ---- UniquePtr Test ended ---- \n");
+    debug(m3) printf("\n ---- UniquePtr Test ended ---- \n");
 }
 
 @nogc
 unittest {
-    debug printf("\n ---- SharedPtr Test started ---- \n");
+    debug(m3) printf("\n ---- SharedPtr Test started ---- \n");
 
     SharedPtr!(C) sc = makeShared!(C)(42);
     assert(sc.id == 42 && sc.getId() == 42);
@@ -312,7 +316,7 @@ unittest {
         {
             _SDL_Surface* sdl_srfc = m3.m3.make!(_SDL_Surface);
             //SharedPtr!(_SDL_Surface).Deleter sdl_del = (_SDL_Surface* p) @nogc { _SDL_FreeSurface(p); p = null; };
-            SharedPtr!(_SDL_Surface) srfc2 = makeShared!(_SDL_Surface)(sdl_srfc, function(_SDL_Surface* p) { _SDL_FreeSurface(p); p = null; debug printf("SharedPtr: _SDL_FreeSurface\n"); });
+            SharedPtr!(_SDL_Surface) srfc2 = makeShared!(_SDL_Surface)(sdl_srfc, function(_SDL_Surface* p) { _SDL_FreeSurface(p); p = null; debug(m3) printf("SharedPtr: _SDL_FreeSurface\n"); });
 
             assert(srfc1.useCount == 0);
             assert(srfc2.useCount == 1);
@@ -329,5 +333,5 @@ unittest {
 
     assert(sdl_deleter == 2);
     
-    debug printf("\n ---- SharedPtr Test ended ---- \n");
+    debug(m3) printf("\n ---- SharedPtr Test ended ---- \n");
 }

@@ -3,7 +3,11 @@ module m3.Stack;
 private:
 
 static import m3.m3;
-debug alias printf = m3.m3.printf;
+
+debug(m3) {
+    static import core.stdc.stdio;
+    alias printf = core.stdc.stdio.printf;
+}
 
 static import std.traits;
 alias isArray = std.traits.isArray;
@@ -27,7 +31,8 @@ public:
     ~this() {
         Node* cur = _end;
         while (cur) {
-            debug printf("Destroy Stack\n");
+            debug(m3) printf("Destroy Stack\n");
+            
             Node* tmp = cur;
             cur = tmp.previous;
             m3.m3.destruct(tmp);
