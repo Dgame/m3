@@ -313,8 +313,10 @@ T reserve(T)(ref T arr, size_t size) if (isArray!(T)) {
     } else
         arr = reserve(arr.ptr, nlen)[0 .. nlen];
 
-    for (size_t i = olen; i < nlen; i++) {
-        arr[i] = Next.init;
+    static if (!is(Base == void)) {
+        for (size_t i = olen; i < nlen; i++) {
+            arr[i] = Next.init;
+        }
     }
 
     return arr;
