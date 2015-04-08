@@ -18,8 +18,8 @@ enum DTOR = "__dtor";
 
 package:
 
-debug static import core.stdc.stdio;
-debug alias printf = core.stdc.stdio.printf;
+debug(m3) static import core.stdc.stdio;
+debug(m3) alias printf = core.stdc.stdio.printf;
 
 public:
 
@@ -195,14 +195,14 @@ auto emplace(T, Args...)(void[] buf, auto ref Args args) if (is(T == class) || i
 
     static if (is(T == class)) {
         buf[] = typeid(T).init[];
-        debug printf("Emplace class %s\n", &T.stringof[0]);
+        debug(m3) printf("Emplace class %s\n", &T.stringof[0]);
     }
 
     Type tp = cast(Type) buf.ptr;
 
     static if (is(T == struct)) {
         *tp = T.init;
-        debug printf("Emplace struct %s\n", &T.stringof[0]);
+        debug(m3) printf("Emplace struct %s\n", &T.stringof[0]);
     }
 
     static if (args.length != 0) {
@@ -218,7 +218,7 @@ auto make(T, Args...)(auto ref Args args) if (is(T == class) || is(T == struct))
     enum size_t SIZE = SizeOf!(T);
     void* p = malloc(SIZE);
 
-    debug printf("Make %s : %p\n", &T.stringof[0], p);
+    debug(m3) printf("Make %s : %p\n", &T.stringof[0], p);
         
     return emplace!(T)(p[0 .. SIZE], args);
 }
@@ -247,7 +247,7 @@ void destruct(T)(T obj) if (is(T == class)) {
     if (obj) {
         static if (__traits(hasMember, T, DTOR))
             obj.__dtor();
-        debug printf("Release class %s : %p\n", &T.stringof[0], cast(void*) obj);
+        debug(m3) printf("Release class %s : %p\n", &T.stringof[0], cast(void*) obj);
         
         free(cast(void*) obj);
         obj = null;
@@ -260,7 +260,7 @@ void destruct(T)(T* p) if (!is(T == class)) {
         static if (is(T == struct)) {
             static if (__traits(hasMember, T, DTOR))
                 p.__dtor();
-            debug printf("Release struct %s: %p\n", &T.stringof[0], p);
+            debug(m3) printf("Release struct %s: %p\n", &T.stringof[0], p);
         }
 
         free(p);
@@ -379,7 +379,7 @@ version (unittest) {
         }
         
         ~this() {
-            debug printf("DTor A\n");
+            debug(m3) printf("DTor A\n");
         }
         
         int getId() const {
@@ -394,7 +394,7 @@ version (unittest) {
         }
         
         ~this() {
-            debug printf("DTor B\n");
+            debug(m3) printf("DTor B\n");
         }
     }
 
@@ -407,7 +407,7 @@ version (unittest) {
         }
 
         ~this() {
-            debug printf("DTor C\n");
+            debug(m3) printf("DTor C\n");
         }
         
         int getId() const {
@@ -461,7 +461,7 @@ unittest {
     assert(*p2 == 1);
     assert(**p3 == 42);
 
-    debug printf("A.sizeof = %d, B.sizeof = %d, C.sizeof = %d\n",
+    debug(m3) printf("A.sizeof = %d, B.sizeof = %d, C.sizeof = %d\n",
         __traits(classInstanceSize, A), __traits(classInstanceSize, B), C.sizeof);
 
     arr[0] = 42;
@@ -513,7 +513,7 @@ unittest {
     aarr.reserve(42);
     scope(exit) destruct(aarr);
 
-    debug printf("aarr.length = %d\n", aarr.length);
+    debug(m3) printf("aarr.length = %d\n", aarr.length);
 
     assert(aarr.length == 42);
     for (size_t i = 0; i < 42; i++) {
@@ -543,7 +543,7 @@ unittest {
     A[] aarr2 = make!(A[])(42);
     scope(exit) destruct(aarr2);
 
-    debug printf("aarr2.length = %d\n", aarr2.length);
+    debug(m3) printf("aarr2.length = %d\n", aarr2.length);
 
     assert(aarr2.length == 42);
     for (size_t i = 0; i < 42; i++) {
@@ -574,7 +574,7 @@ unittest {
     carr.reserve(23);
     scope(exit) destruct(carr);
 
-    debug printf("carr.length = %d\n", carr.length);
+    debug(m3) printf("carr.length = %d\n", carr.length);
 
     assert(carr.length == 23);
     for (size_t i = 0; i < 23; i++) {
@@ -599,7 +599,7 @@ unittest {
     C[] carr2 = make!(C[])(23);
     scope(exit) destruct(carr2);
 
-    debug printf("carr2.length = %d\n", carr2.length);
+    debug(m3) printf("carr2.length = %d\n", carr2.length);
 
     assert(carr2.length == 23);
     for (size_t i = 0; i < 23; i++) {
